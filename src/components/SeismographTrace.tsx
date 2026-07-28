@@ -130,7 +130,7 @@ export function SeismographTrace({
       <Svg width={width} height={height}>
         <AnimatedPath
           d={path}
-          stroke={colors.accent}
+          stroke={colors.accentGreen}
           strokeWidth={strokeWidth * 3}
           strokeOpacity={0.18}
           fill="none"
@@ -140,7 +140,7 @@ export function SeismographTrace({
         />
         <AnimatedPath
           d={path}
-          stroke={colors.accent}
+          stroke={colors.accentGreen}
           strokeWidth={strokeWidth}
           fill="none"
           strokeLinecap="round"

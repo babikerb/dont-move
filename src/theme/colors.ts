@@ -16,14 +16,9 @@ export const colors = {
   accentRed: '#B5493A',
   accentTeal: '#5E8A8E',
 
-  // Aliases kept for screens not yet migrated off the old single-accent
-  // model - resolve to the same values, no behavior change.
-  accent: '#7A9B6A',
   onAccent: '#0A0A0A',
-  danger: '#B5493A',
   switchTrackOff: '#2A2A2A',
   switchThumb: '#EDEAE4',
-  divider: '#2A2A2A',
 } as const;
 
 // Fixed scale per CLAUDE.md - no arbitrary spacing values.

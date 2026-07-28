@@ -11,9 +11,11 @@ interface AvatarProps {
 
 const cache = new Map<string, string>();
 
-// A small set of muted, on-brand background colors rather than callit's
-// bright party palette, to stay inside CLAUDE.md's "minimal color palette."
-const BACKGROUND_COLORS = ['1C1C1E', '2C2C2E', '34C759', '0A84FF', 'FF9F0A'];
+// Dark neutrals plus the app's own muted retro accents (no bright blue, no
+// neon) - matches CLAUDE.md's tactical-instrument palette instead of
+// callit's bright party colors. Red is left out; it reads as
+// danger/rejection elsewhere in the app, not a neutral avatar backdrop.
+const BACKGROUND_COLORS = ['1C1C1E', '2C2C2E', '7A9B6A', '5E8A8E', 'B8903F'];
 
 function svgForSeed(seed: string): string {
   const cached = cache.get(seed);
