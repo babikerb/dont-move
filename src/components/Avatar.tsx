@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { View } from 'react-native';
 import { avataaars } from '@dicebear/collection';
 import { createAvatar } from '@dicebear/core';
 import { SvgXml } from 'react-native-svg';
@@ -24,7 +25,12 @@ function svgForSeed(seed: string): string {
   const overrides = AVATAR_OPTIONS_BY_ID[seed] ?? {};
   const svg = createAvatar(avataaars, {
     seed,
-    radius: 50,
+    // Square canvas, no internal circular mask - DiceBear's own SVG <mask>
+    // approach doesn't always render identically through react-native-svg
+    // (subtle top clipping was visible on-device despite server-rendered
+    // test PNGs looking correct). The circle is instead cut natively below,
+    // which is guaranteed pixel-accurate.
+    radius: 0,
     backgroundColor: BACKGROUND_COLORS,
     ...overrides,
   }).toString();
@@ -36,5 +42,9 @@ function svgForSeed(seed: string): string {
 export function Avatar({ id, size = 48 }: AvatarProps) {
   const seed = id || DEFAULT_AVATAR_ID;
   const svg = useMemo(() => svgForSeed(seed), [seed]);
-  return <SvgXml xml={svg} width={size} height={size} />;
+  return (
+    <View style={{ width: size, height: size, borderRadius: size / 2, overflow: 'hidden' }}>
+      <SvgXml xml={svg} width={size} height={size} />
+    </View>
+  );
 }
