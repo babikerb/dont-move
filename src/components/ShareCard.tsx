@@ -16,6 +16,8 @@ interface ShareCardProps {
 export function ShareCard({ score, trace, isPersonalBest }: ShareCardProps) {
   return (
     <View style={styles.card}>
+      <Text style={styles.wordmark}>DON'T MOVE</Text>
+
       <View style={styles.center}>
         <Text style={styles.score} numberOfLines={1} adjustsFontSizeToFit>
           {score.toFixed(2)}
@@ -23,7 +25,7 @@ export function ShareCard({ score, trace, isPersonalBest }: ShareCardProps) {
         <Text style={styles.percentile}>{formatPercentile(score)}</Text>
 
         <View style={styles.traceWrapper}>
-          <SeismographTrace values={trace} width={SHARE_CARD_WIDTH - 96} height={64} strokeWidth={1.5} />
+          <SeismographTrace values={trace} width={SHARE_CARD_WIDTH - 96} height={64} />
         </View>
 
         {isPersonalBest && <Text style={styles.personalBest}>PERSONAL BEST</Text>}
@@ -42,6 +44,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 48,
+  },
+  wordmark: {
+    position: 'absolute',
+    top: 56,
+    color: colors.textTertiary,
+    fontSize: 13,
+    fontWeight: '700',
+    letterSpacing: 2,
   },
   center: {
     alignItems: 'center',

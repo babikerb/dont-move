@@ -122,13 +122,7 @@ export function ResultsScreen({ navigation, route }: Props) {
         {resultMessage && <Text style={styles.resultMessage}>{resultMessage}</Text>}
 
         <View style={styles.traceWrapper}>
-          <SeismographTrace
-            values={trace}
-            width={width - spacing.lg * 4}
-            height={60}
-            strokeWidth={1.5}
-            animateIn
-          />
+          <SeismographTrace values={trace} width={width - spacing.lg * 4} height={60} animateIn />
         </View>
 
         {isPersonalBest && <Text style={styles.personalBest}>PERSONAL BEST</Text>}

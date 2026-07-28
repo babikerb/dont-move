@@ -3,7 +3,12 @@ import { Accelerometer, Gyroscope } from 'expo-sensors';
 
 const SAMPLE_INTERVAL_MS = 16; // ~60Hz, the highest frequency that stays stable across Expo-supported devices
 const TRACE_UPDATE_INTERVAL_MS = 90;
-export const TRACE_LENGTH = 140;
+// Must cover a full run (RUN_DURATION_SECONDS in PlayScreen / TRACE_UPDATE_INTERVAL_MS,
+// ~222 ticks for a 20s run) plus a small safety margin. Sized this way, the
+// live trace fills the width by the end of a run instead of scrolling a
+// short recent window the whole time, which is what made it look like a
+// different, sparser thing than the Results screen's full-run trace.
+export const TRACE_LENGTH = 230;
 
 // Accelerometer reports in g, gyroscope in rad/s, so these scale both into one
 // comparable movement range. Placeholder values, still need on-device
