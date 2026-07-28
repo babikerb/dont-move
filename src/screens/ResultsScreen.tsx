@@ -13,6 +13,7 @@ import { captureRef } from 'react-native-view-shot';
 import * as Sharing from 'expo-sharing';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
+import { Button } from '../components/Button';
 import { SeismographTrace } from '../components/SeismographTrace';
 import { ShareCard } from '../components/ShareCard';
 import { formatPercentile, formatTopPercent } from '../lib/percentile';
@@ -21,14 +22,13 @@ import { getResultMessage } from '../lib/resultMessages';
 import { hapticPersonalBest } from '../lib/haptics';
 import { tapFeedback } from '../lib/feedback';
 import { playSound } from '../lib/sound';
-import { colors, spacing } from '../theme/colors';
+import { colors, fontFamily, spacing, type } from '../theme/colors';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Results'>;
 
 export function ResultsScreen({ navigation, route }: Props) {
   const { score, trace, isPersonalBest } = route.params;
   const { width } = useWindowDimensions();
-  const scoreScale = useRef(new Animated.Value(0.85)).current;
   const scoreOpacity = useRef(new Animated.Value(0)).current;
   const shareCardRef = useRef<View>(null);
   const [isSharing, setIsSharing] = useState(false);
@@ -64,22 +64,14 @@ export function ResultsScreen({ navigation, route }: Props) {
       if (cancelled) return;
 
       if (reduced) {
-        scoreScale.setValue(1);
         scoreOpacity.setValue(1);
       } else {
-        Animated.parallel([
-          Animated.spring(scoreScale, {
-            toValue: 1,
-            friction: isPersonalBest ? 4 : 6,
-            tension: isPersonalBest ? 70 : 50,
-            useNativeDriver: true,
-          }),
-          Animated.timing(scoreOpacity, {
-            toValue: 1,
-            duration: 350,
-            useNativeDriver: true,
-          }),
-        ]).start();
+        // Fast, no overshoot - a confirming appearance, not a bounce.
+        Animated.timing(scoreOpacity, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }).start();
       }
 
       if (isPersonalBest) {
@@ -130,9 +122,7 @@ export function ResultsScreen({ navigation, route }: Props) {
   return (
     <View style={styles.container}>
       <View style={styles.center}>
-        <Animated.Text
-          style={[styles.score, { opacity: scoreOpacity, transform: [{ scale: scoreScale }] }]}
-        >
+        <Animated.Text style={[styles.score, { opacity: scoreOpacity }]}>
           {score.toFixed(2)}
         </Animated.Text>
         <Text style={styles.percentile}>{percentileText}</Text>
@@ -157,31 +147,14 @@ export function ResultsScreen({ navigation, route }: Props) {
       </View>
 
       <View style={styles.actions}>
-        <Pressable
-          style={[styles.button, styles.primaryButton]}
-          onPress={handlePlayAgain}
-          accessibilityRole="button"
-          accessibilityLabel="Play again"
-        >
-          <Text style={styles.primaryButtonText}>Play Again</Text>
-        </Pressable>
-        <Pressable
-          style={styles.button}
+        <Button label="Play Again" onPress={handlePlayAgain} />
+        <Button
+          label={isSharing ? 'Sharing...' : 'Share'}
           onPress={handleShare}
           disabled={isSharing}
-          accessibilityRole="button"
-          accessibilityLabel="Share"
-        >
-          <Text style={styles.secondaryButtonText}>{isSharing ? 'Sharing...' : 'Share'}</Text>
-        </Pressable>
-        <Pressable
-          style={styles.button}
-          onPress={handleHome}
-          accessibilityRole="button"
-          accessibilityLabel="Home"
-        >
-          <Text style={styles.secondaryButtonText}>Home</Text>
-        </Pressable>
+          variant="secondary"
+        />
+        <Button label="Home" onPress={handleHome} variant="secondary" />
       </View>
     </View>
   );
@@ -200,22 +173,21 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.md,
+    gap: spacing.sm,
   },
   score: {
     color: colors.textPrimary,
-    fontSize: 80,
-    fontWeight: '700',
-    fontVariant: ['tabular-nums'],
+    fontFamily: fontFamily.monoBold,
+    fontSize: type.display,
   },
   percentile: {
-    color: colors.accent,
-    fontSize: 20,
+    color: colors.accentAmber,
+    fontSize: type.heading,
     fontWeight: '600',
   },
   resultMessage: {
     color: colors.textSecondary,
-    fontSize: 15,
+    fontSize: type.body,
     fontWeight: '500',
   },
   traceWrapper: {
@@ -223,8 +195,8 @@ const styles = StyleSheet.create({
   },
   personalBest: {
     marginTop: spacing.lg,
-    color: colors.textPrimary,
-    fontSize: 14,
+    color: colors.accentGreen,
+    fontSize: type.caption,
     fontWeight: '700',
     letterSpacing: 1.5,
   },
@@ -235,23 +207,5 @@ const styles = StyleSheet.create({
   },
   actions: {
     gap: spacing.sm,
-  },
-  button: {
-    paddingVertical: spacing.md,
-    borderRadius: 999,
-    alignItems: 'center',
-  },
-  primaryButton: {
-    backgroundColor: colors.accent,
-  },
-  primaryButtonText: {
-    color: colors.onAccent,
-    fontSize: 17,
-    fontWeight: '700',
-  },
-  secondaryButtonText: {
-    color: colors.textSecondary,
-    fontSize: 16,
-    fontWeight: '600',
   },
 });

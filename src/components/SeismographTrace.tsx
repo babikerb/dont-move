@@ -104,7 +104,7 @@ export function SeismographTrace({
       }
       Animated.timing(progress, {
         toValue: 1,
-        duration: 700,
+        duration: 400,
         useNativeDriver: false,
       }).start();
     });

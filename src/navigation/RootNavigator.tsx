@@ -7,6 +7,7 @@ import { ResultsScreen } from '../screens/ResultsScreen';
 import { AvatarPickerScreen } from '../screens/AvatarPickerScreen';
 import { RedeemCodeScreen } from '../screens/RedeemCodeScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
+import { RunHistoryScreen } from '../screens/RunHistoryScreen';
 import { TabNavigator } from './TabNavigator';
 import { colors } from '../theme/colors';
 
@@ -23,6 +24,7 @@ export type RootStackParamList = {
   AvatarPicker: undefined;
   RedeemCode: undefined;
   Settings: undefined;
+  RunHistory: undefined;
 };
 
 export type TabParamList = {
@@ -69,6 +71,7 @@ export function RootNavigator() {
         <Stack.Screen name="AvatarPicker" component={AvatarPickerScreen} options={{ presentation: 'modal' }} />
         <Stack.Screen name="RedeemCode" component={RedeemCodeScreen} options={{ presentation: 'modal' }} />
         <Stack.Screen name="Settings" component={SettingsScreen} options={{ presentation: 'modal' }} />
+        <Stack.Screen name="RunHistory" component={RunHistoryScreen} options={{ presentation: 'modal' }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

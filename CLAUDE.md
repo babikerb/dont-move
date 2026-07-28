@@ -41,7 +41,7 @@ Don't Move has one visual signature that appears everywhere movement is shown: a
 - This motif is the natural foundation for the future "Movement graph" and "Replay visualization" features. Those are a zoomed-in, scrubbable version of the same trace, not a new concept.
 
 Rendering notes:
-- Single stroke, accent green (`#34C759`), subtle glow, no fill.
+- Single stroke, accent green (`#7A9B6A`), subtle phosphor-style glow (like a CRT oscilloscope trace, not a neon effect), no fill.
 - No axis labels, gridlines, or units. This is a feeling, not a chart.
 - Motion should be smooth (interpolated and eased), never jittery from raw sensor noise. The trace shows the *scored* movement signal, after smoothing, not raw accelerometer output.
 
@@ -320,8 +320,12 @@ Large typography.
 
 Minimal branding.
 
+Square canvas (1080x1080 at typical capture scale), not a 9:16 story shape - chat apps show shared images center-cropped toward square in their inline preview (iMessage, WhatsApp, X timeline), so all critical content stays inside a centered ~800x800 safe area (~140px padding per edge) rather than risking the top/bottom being cropped off before anyone taps to view it full size.
+
 Optimized for:
 
+- iMessage
+- WhatsApp
 - Instagram Stories
 - TikTok
 - Discord
@@ -477,27 +481,52 @@ Nothing else.
 
 # Design Language
 
-Dark mode first.
+Dark, retro, tactical, minimal. High information density. Fast. Confident. Purpose-built.
 
-Large typography.
+Think old monochrome terminals, Braun industrial design, early iPod UI, retro Casio watches, vintage digital clocks, oscilloscopes, dark aviation instruments. Timeless, not futuristic. Not cyberpunk, not synthwave, not gamer, no neon overload.
 
-Generous spacing.
+The app should feel like a precision instrument, not an arcade game. Everything exists for a reason — if an element doesn't improve usability, remove it. Typography, spacing, alignment, rhythm, and contrast do the work; visual effects don't.
 
-Rounded corners.
+## Color
 
-Minimal color palette.
+- Background: near black (`#0A0A0A`)
+- Surface: slightly lighter charcoal (`#161616`)
+- Border: low-contrast gray (`#2A2A2A`), hairline, flat — never a shadow
+- Primary text: warm white (`#EDEAE4`)
+- Secondary text: muted gray (`#9A9A94`)
 
-Accent color:
+Accent is a small tactical-instrument palette, not one hue reused everywhere — the way a real instrument panel uses distinct functional colors (go, caution, stop) rather than a single decorative one. Each accent is muted and desaturated, never neon:
 
-`#34C759`
+- Green `#7A9B6A` — positive/active/primary: score, primary actions, personal best, "go"
+- Amber `#B8903F` — caution/secondary emphasis: ranks, secondary stats, in-progress states
+- Red `#B5493A` — danger/rejection: cancelled runs, errors, "stop"
+- Teal `#5E8A8E` — informational/secondary highlight: metadata, timestamps, non-primary tabs
 
-The seismograph trace (see **Visual Theme**) is the app's core recurring visual motif. It should appear during the run, on the results screen, and on the share card, always rendered the same way.
+No rainbow colors, no purple, no bright blue, no bright gradients, no neon. Never rely on color alone to establish hierarchy — pair every accent use with typography/position, not color alone.
 
-Use subtle blur where appropriate.
+The seismograph trace (see **Visual Theme**) is the app's core recurring visual motif, always rendered in the accent green. It should appear during the run, on the results screen, and on the share card, always rendered the same way.
 
-Avoid gradients unless they noticeably improve the design.
+## Spacing
 
-Animations should be spring-based, smooth, and intentional.
+Fixed scale: 4, 8, 12, 16, 20, 24, 32. No arbitrary values. Tight, predictable vertical rhythm — this is professional instrument software adapted for mobile, not a spacious marketing site.
+
+## Corners
+
+Mostly square. 2–8px radius maximum. Nothing should feel soft.
+
+## Typography
+
+The primary design element. Large jumps between heading and body sizes, consistent weights, compact line heights, uppercase labels used sparingly. Monospace (JetBrains Mono) only for timers, counters, scores, coordinates, timestamps, and other values that benefit from a technical feel — never for prose.
+
+## Motion
+
+Fast and purposeful, under 250ms. No spring overshoot, no bounce. Motion communicates navigation, state changes, loading, or confirmation — never decoration.
+
+## Components
+
+Custom-built, not stock-looking. Borders over shadows. No blur, no glassmorphism, no glowing borders, no gradients, no floating translucent cards, no giant pill buttons, no decorative icons or dividers. Prefer sections separated by spacing and hairline borders over cards; if a card is used, it's flat, square-ish, thin-bordered, no shadow.
+
+The bottom tab bar and every screen header are fully custom (never the default React Navigation appearance): solid background, thin border, edge-to-edge, no blur, no floating pill. The tab bar should feel like hardware — buttons on a vintage electronic device.
 
 ---
 

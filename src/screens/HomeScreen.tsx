@@ -1,11 +1,12 @@
 import React, { useCallback, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { HomeScreenProps } from '../navigation/TabNavigator';
+import { Button } from '../components/Button';
 import { getBestScore } from '../lib/storage';
 import { tapFeedback } from '../lib/feedback';
-import { colors, spacing } from '../theme/colors';
+import { colors, fontFamily, spacing, type } from '../theme/colors';
 
 export function HomeScreen({ navigation }: HomeScreenProps) {
   const insets = useSafeAreaInsets();
@@ -29,33 +30,21 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top + spacing.xxl }]}>
-      <View style={styles.center}>
-        <Text style={styles.logo}>DON'T MOVE</Text>
+    <View style={[styles.container, { paddingTop: insets.top + spacing.xl }]}>
+      <Text style={styles.wordmark}>DON'T MOVE</Text>
 
-        <View style={styles.bestScoreBlock}>
-          <Text style={styles.bestScoreLabel}>BEST SCORE</Text>
-          {bestScore !== null ? (
-            <Text
-              style={styles.bestScoreValue}
-              accessibilityLabel={`Best score ${bestScore.toFixed(2)}`}
-            >
-              {bestScore.toFixed(2)}
-            </Text>
-          ) : (
-            <Text style={styles.bestScoreEmpty}>Play your first run</Text>
-          )}
-        </View>
+      <View style={styles.center}>
+        <Text style={styles.bestScoreLabel}>BEST SCORE</Text>
+        {bestScore !== null ? (
+          <Text style={styles.bestScoreValue} accessibilityLabel={`Best score ${bestScore.toFixed(2)}`}>
+            {bestScore.toFixed(2)}
+          </Text>
+        ) : (
+          <Text style={styles.bestScoreEmpty}>NO RUNS YET</Text>
+        )}
       </View>
 
-      <Pressable
-        style={({ pressed }) => [styles.playButton, pressed && styles.playButtonPressed]}
-        onPress={handlePlay}
-        accessibilityRole="button"
-        accessibilityLabel="Play"
-      >
-        <Text style={styles.playButtonText}>PLAY</Text>
-      </Pressable>
+      <Button label="Play" onPress={handlePlay} />
     </View>
   );
 }
@@ -65,55 +54,36 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
     paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xxl,
+    paddingBottom: spacing.xl,
     justifyContent: 'space-between',
+  },
+  wordmark: {
+    color: colors.textSecondary,
+    fontSize: type.label,
+    fontWeight: '700',
+    letterSpacing: 3,
   },
   center: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.xl,
-  },
-  logo: {
-    color: colors.textPrimary,
-    fontSize: 32,
-    fontWeight: '700',
-    letterSpacing: 2,
-  },
-  bestScoreBlock: {
-    alignItems: 'center',
-    gap: spacing.xs,
+    gap: spacing.sm,
   },
   bestScoreLabel: {
     color: colors.textSecondary,
-    fontSize: 13,
-    fontWeight: '600',
-    letterSpacing: 1.5,
+    fontSize: type.label,
+    fontWeight: '700',
+    letterSpacing: 2,
   },
   bestScoreValue: {
     color: colors.textPrimary,
-    fontSize: 64,
-    fontWeight: '700',
-    fontVariant: ['tabular-nums'],
+    fontFamily: fontFamily.monoBold,
+    fontSize: type.display,
   },
   bestScoreEmpty: {
-    color: colors.textSecondary,
-    fontSize: 20,
+    color: colors.textTertiary,
+    fontSize: type.heading,
     fontWeight: '600',
-  },
-  playButton: {
-    backgroundColor: colors.accent,
-    borderRadius: 999,
-    paddingVertical: spacing.lg,
-    alignItems: 'center',
-  },
-  playButtonPressed: {
-    opacity: 0.85,
-  },
-  playButtonText: {
-    color: colors.onAccent,
-    fontSize: 20,
-    fontWeight: '700',
     letterSpacing: 1,
   },
 });

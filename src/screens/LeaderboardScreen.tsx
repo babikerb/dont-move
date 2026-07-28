@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Header } from '../components/Header';
 import { Avatar } from '../components/Avatar';
 import { DevBadge } from '../components/DevBadge';
 import {
@@ -13,16 +13,15 @@ import {
 } from '../lib/leaderboard';
 import { supabase } from '../lib/supabase';
 import { tapFeedback } from '../lib/feedback';
-import { colors, spacing } from '../theme/colors';
+import { colors, fontFamily, radius, spacing, type } from '../theme/colors';
 
 const WINDOWS: { key: LeaderboardWindow; label: string }[] = [
   { key: 'today', label: 'Today' },
-  { key: 'week', label: 'This Week' },
+  { key: 'week', label: 'Week' },
   { key: 'all_time', label: 'All Time' },
 ];
 
 export function LeaderboardScreen() {
-  const insets = useSafeAreaInsets();
   const [window, setWindow] = useState<LeaderboardWindow>('today');
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [myRank, setMyRank] = useState<MyRank | null>(null);
@@ -102,66 +101,76 @@ export function LeaderboardScreen() {
   const amInTopList = myUserId !== null && entries.some((e) => e.userId === myUserId);
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top + spacing.md }]}>
-      <Text style={styles.title}>Leaderboard</Text>
+    <View style={styles.container}>
+      <Header title="Leaderboard" divider />
 
-      {beatBanner && (
-        <View style={styles.beatBanner}>
-          <Text style={styles.beatBannerText}>Someone just beat your score</Text>
-        </View>
-      )}
+      <View style={styles.body}>
+        {beatBanner && (
+          <View style={styles.beatBanner}>
+            <Text style={styles.beatBannerText}>SOMEONE JUST BEAT YOUR SCORE</Text>
+          </View>
+        )}
 
-      <View style={styles.tabRow}>
-        {WINDOWS.map((w) => (
-          <Pressable
-            key={w.key}
-            style={[styles.tab, window === w.key && styles.tabActive]}
-            onPress={() => handleSelectWindow(w.key)}
-            accessibilityRole="button"
-            accessibilityLabel={w.label}
-          >
-            <Text style={[styles.tabText, window === w.key && styles.tabTextActive]}>{w.label}</Text>
-          </Pressable>
-        ))}
-      </View>
+        <View style={styles.tabRow}>
+          {WINDOWS.map((w, i) => (
+            <Pressable
+              key={w.key}
+              style={[
+                styles.tab,
+                i < WINDOWS.length - 1 && styles.tabDivider,
+                window === w.key && styles.tabActive,
+              ]}
+              onPress={() => handleSelectWindow(w.key)}
+              accessibilityRole="button"
+              accessibilityLabel={w.label}
+            >
+              <Text style={[styles.tabText, window === w.key && styles.tabTextActive]}>
+                {w.label.toUpperCase()}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
 
-      {loading ? (
-        <View style={styles.center}>
-          <ActivityIndicator color={colors.accent} />
-        </View>
-      ) : entries.length === 0 ? (
-        <View style={styles.center}>
-          <Text style={styles.emptyText}>No runs yet. Be the first.</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={entries}
-          keyExtractor={(item) => item.userId}
-          contentContainerStyle={{ paddingBottom: spacing.xl }}
-          showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <View style={[styles.row, item.userId === myUserId && styles.rowMe]}>
-              <Text style={styles.rank}>{item.rank}</Text>
-              <Avatar id={item.avatarId} size={36} />
-              <View style={styles.usernameRow}>
-                <Text style={styles.username} numberOfLines={1}>
-                  {item.username ?? 'Player'}
+        {loading ? (
+          <View style={styles.center}>
+            <ActivityIndicator color={colors.accentGreen} />
+          </View>
+        ) : entries.length === 0 ? (
+          <View style={styles.center}>
+            <Text style={styles.emptyText}>NO RUNS YET - BE THE FIRST</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={entries}
+            keyExtractor={(item) => item.userId}
+            contentContainerStyle={{ paddingBottom: spacing.xl }}
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item }) => (
+              <View style={[styles.row, item.userId === myUserId && styles.rowMe]}>
+                <Text style={styles.rank}>{String(item.rank).padStart(2, '0')}</Text>
+                <Avatar id={item.avatarId} size={32} />
+                <View style={styles.usernameRow}>
+                  <Text style={styles.username} numberOfLines={1}>
+                    {item.username ?? 'Player'}
+                  </Text>
+                  {item.isDev && <DevBadge size={12} />}
+                </View>
+                <Text style={[styles.score, item.userId === myUserId && styles.scoreMe]}>
+                  {item.score.toFixed(2)}
                 </Text>
-                {item.isDev && <DevBadge size={12} />}
               </View>
-              <Text style={styles.score}>{item.score.toFixed(2)}</Text>
-            </View>
-          )}
-        />
-      )}
+            )}
+          />
+        )}
 
-      {!loading && myRank && !amInTopList && (
-        <View style={styles.myRankFooter}>
-          <Text style={styles.myRankText}>
-            Your rank: #{myRank.rank} of {myRank.total} - {myRank.score.toFixed(2)}
-          </Text>
-        </View>
-      )}
+        {!loading && myRank && !amInTopList && (
+          <View style={styles.myRankFooter}>
+            <Text style={styles.myRankText}>
+              YOUR RANK  #{myRank.rank} / {myRank.total}  {myRank.score.toFixed(2)}
+            </Text>
+          </View>
+        )}
+      </View>
     </View>
   );
 }
@@ -170,48 +179,55 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    paddingHorizontal: spacing.lg,
   },
-  title: {
-    color: colors.textPrimary,
-    fontSize: 22,
-    fontWeight: '700',
-    marginBottom: spacing.md,
+  body: {
+    flex: 1,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
   },
   beatBanner: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.accentAmber,
+    borderRadius: radius.md,
     paddingVertical: spacing.sm,
     marginBottom: spacing.md,
     alignItems: 'center',
   },
   beatBannerText: {
-    color: colors.accent,
-    fontSize: 14,
+    color: colors.accentAmber,
+    fontSize: type.caption,
     fontWeight: '700',
+    letterSpacing: 0.5,
   },
   tabRow: {
     flexDirection: 'row',
-    gap: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
     marginBottom: spacing.md,
+    overflow: 'hidden',
   },
   tab: {
     flex: 1,
     paddingVertical: spacing.sm,
-    borderRadius: 999,
     alignItems: 'center',
-    backgroundColor: colors.surface,
+  },
+  tabDivider: {
+    borderRightWidth: 1,
+    borderRightColor: colors.border,
   },
   tabActive: {
-    backgroundColor: colors.accent,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.accentGreen,
   },
   tabText: {
     color: colors.textSecondary,
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: type.caption,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
   tabTextActive: {
-    color: colors.onAccent,
+    color: colors.accentGreen,
   },
   center: {
     flex: 1,
@@ -220,7 +236,8 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     color: colors.textSecondary,
-    fontSize: 15,
+    fontSize: type.caption,
+    letterSpacing: 0.5,
   },
   row: {
     flexDirection: 'row',
@@ -228,15 +245,16 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.sm,
-    borderRadius: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   rowMe: {
     backgroundColor: colors.surface,
   },
   rank: {
-    color: colors.textTertiary,
-    fontSize: 14,
-    fontWeight: '600',
+    color: colors.accentAmber,
+    fontFamily: fontFamily.mono,
+    fontSize: type.body,
     width: 28,
   },
   usernameRow: {
@@ -247,25 +265,27 @@ const styles = StyleSheet.create({
   },
   username: {
     color: colors.textPrimary,
-    fontSize: 15,
+    fontSize: type.body,
     fontWeight: '600',
     flexShrink: 1,
   },
   score: {
-    color: colors.accent,
-    fontSize: 15,
-    fontWeight: '700',
-    fontVariant: ['tabular-nums'],
+    color: colors.textPrimary,
+    fontFamily: fontFamily.monoSemiBold,
+    fontSize: type.body,
+  },
+  scoreMe: {
+    color: colors.accentGreen,
   },
   myRankFooter: {
     paddingVertical: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: colors.divider,
+    borderTopColor: colors.border,
   },
   myRankText: {
     color: colors.textSecondary,
-    fontSize: 13,
-    fontWeight: '600',
+    fontFamily: fontFamily.mono,
+    fontSize: type.caption,
     textAlign: 'center',
   },
 });

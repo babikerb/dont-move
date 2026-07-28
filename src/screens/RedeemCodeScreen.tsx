@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { RootStackParamList } from '../navigation/RootNavigator';
+import { Header } from '../components/Header';
+import { Button } from '../components/Button';
 import { Avatar } from '../components/Avatar';
 import { Profile, redeemAvatarCode } from '../lib/profile';
 import { PROFILE_QUERY_KEY } from '../lib/profileQuery';
 import { hapticPersonalBest } from '../lib/haptics';
 import { tapFeedback } from '../lib/feedback';
-import { colors, spacing } from '../theme/colors';
+import { colors, radius, spacing, type } from '../theme/colors';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'RedeemCode'>;
 
@@ -50,29 +52,17 @@ export function RedeemCodeScreen({ navigation }: Props) {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.container, { paddingTop: insets.top + spacing.md }]}
+      style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={insets.top}
     >
-      <View style={styles.topRow}>
-        <Text style={styles.title}>Redeem Code</Text>
-        <Pressable onPress={handleClose} hitSlop={16} accessibilityRole="button" accessibilityLabel="Close">
-          <Text style={styles.closeLabel}>Close</Text>
-        </Pressable>
-      </View>
+      <Header title="Redeem Code" action={{ label: 'Close', onPress: handleClose }} divider />
 
       {unlockedId ? (
         <View style={styles.center}>
           <Avatar id={unlockedId} size={88} />
-          <Text style={styles.unlockedText}>Avatar unlocked</Text>
-          <Pressable
-            style={styles.doneButton}
-            onPress={handleClose}
-            accessibilityRole="button"
-            accessibilityLabel="Done"
-          >
-            <Text style={styles.doneButtonText}>Done</Text>
-          </Pressable>
+          <Text style={styles.unlockedText}>AVATAR UNLOCKED</Text>
+          <Button label="Done" onPress={handleClose} style={styles.actionButton} />
         </View>
       ) : (
         <View style={styles.center}>
@@ -83,24 +73,19 @@ export function RedeemCodeScreen({ navigation }: Props) {
               setCode(text);
               if (status === 'invalid') setStatus('idle');
             }}
-            placeholder="Enter code"
+            placeholder="ENTER CODE"
             placeholderTextColor={colors.textTertiary}
             autoCapitalize="characters"
             autoCorrect={false}
             accessibilityLabel="Code"
           />
-          {status === 'invalid' && <Text style={styles.errorText}>Invalid code</Text>}
-          <Pressable
-            style={[styles.submitButton, !code.trim() && styles.submitButtonDisabled]}
+          {status === 'invalid' && <Text style={styles.errorText}>INVALID CODE</Text>}
+          <Button
+            label={status === 'checking' ? 'Checking...' : 'Redeem'}
             onPress={handleSubmit}
             disabled={!code.trim() || status === 'checking'}
-            accessibilityRole="button"
-            accessibilityLabel="Redeem"
-          >
-            <Text style={styles.submitButtonText}>
-              {status === 'checking' ? 'Checking...' : 'Redeem'}
-            </Text>
-          </Pressable>
+            style={styles.actionButton}
+          />
         </View>
       )}
     </KeyboardAvoidingView>
@@ -111,77 +96,42 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    paddingHorizontal: spacing.lg,
-  },
-  topRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingBottom: spacing.lg,
-  },
-  title: {
-    color: colors.textPrimary,
-    fontSize: 20,
-    fontWeight: '700',
-  },
-  closeLabel: {
-    color: colors.accent,
-    fontSize: 17,
-    fontWeight: '600',
   },
   center: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.md,
+    paddingHorizontal: spacing.lg,
   },
   input: {
     width: '100%',
     backgroundColor: colors.surface,
-    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.md,
     color: colors.textPrimary,
-    fontSize: 18,
+    fontSize: type.heading,
     fontWeight: '600',
     letterSpacing: 2,
     textAlign: 'center',
   },
   errorText: {
-    color: colors.danger,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  submitButton: {
-    width: '100%',
-    backgroundColor: colors.accent,
-    borderRadius: 999,
-    paddingVertical: spacing.md,
-    alignItems: 'center',
-  },
-  submitButtonDisabled: {
-    opacity: 0.5,
-  },
-  submitButtonText: {
-    color: colors.onAccent,
-    fontSize: 16,
+    color: colors.accentRed,
+    fontSize: type.caption,
     fontWeight: '700',
+    letterSpacing: 0.5,
   },
   unlockedText: {
-    color: colors.textPrimary,
-    fontSize: 16,
+    color: colors.accentGreen,
+    fontSize: type.body,
     fontWeight: '700',
+    letterSpacing: 0.5,
   },
-  doneButton: {
-    marginTop: spacing.md,
-    backgroundColor: colors.accent,
-    borderRadius: 999,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xl,
-  },
-  doneButtonText: {
-    color: colors.onAccent,
-    fontSize: 16,
-    fontWeight: '700',
+  actionButton: {
+    width: '100%',
+    marginTop: spacing.sm,
   },
 });

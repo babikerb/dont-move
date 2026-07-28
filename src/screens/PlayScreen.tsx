@@ -11,7 +11,7 @@ import { SeismographTrace } from '../components/SeismographTrace';
 import { hapticCountdownTick, hapticGo, hapticReleasedEarly } from '../lib/haptics';
 import { tapFeedback } from '../lib/feedback';
 import { playSound } from '../lib/sound';
-import { colors, spacing } from '../theme/colors';
+import { colors, fontFamily, radius, spacing, type } from '../theme/colors';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Play'>;
 
@@ -242,7 +242,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: spacing.lg,
     backgroundColor: colors.surface,
-    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm + 2,
     minHeight: 44,
@@ -253,8 +255,9 @@ const styles = StyleSheet.create({
   },
   homeButtonText: {
     color: colors.textPrimary,
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: type.caption,
+    fontWeight: '700',
+    letterSpacing: 1,
   },
   center: {
     alignItems: 'center',
@@ -263,21 +266,20 @@ const styles = StyleSheet.create({
   },
   prompt: {
     color: colors.textPrimary,
-    fontSize: 22,
+    fontSize: type.heading,
     fontWeight: '600',
     textAlign: 'center',
   },
   releasedText: {
-    color: colors.danger,
-    fontSize: 15,
+    color: colors.accentRed,
+    fontSize: type.body,
     fontWeight: '500',
     textAlign: 'center',
   },
   countText: {
-    color: colors.accent,
-    fontSize: 96,
-    fontWeight: '700',
-    fontVariant: ['tabular-nums'],
+    color: colors.accentGreen,
+    fontFamily: fontFamily.monoBold,
+    fontSize: 88,
   },
   runningContainer: {
     flex: 1,
@@ -287,9 +289,8 @@ const styles = StyleSheet.create({
   },
   timer: {
     color: colors.textPrimary,
-    fontSize: 120,
-    fontWeight: '700',
-    fontVariant: ['tabular-nums'],
+    fontFamily: fontFamily.monoBold,
+    fontSize: 110,
   },
   traceWrapper: {
     width: '100%',

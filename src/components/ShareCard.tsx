@@ -2,10 +2,18 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SeismographTrace } from './SeismographTrace';
 import { formatPercentile } from '../lib/percentile';
-import { colors } from '../theme/colors';
+import { colors, fontFamily } from '../theme/colors';
 
+// Square canvas rather than a 9:16 story shape: chat apps (iMessage,
+// WhatsApp, X timeline) show shared images center-cropped toward square in
+// their inline preview, so a square canvas with all critical content kept
+// inside a centered safe area survives that crop instead of losing its top
+// and bottom to it. At the device's typical 3x capture scale this exports
+// at 1080x1080; SAFE_PADDING (140/1080 of the canvas) keeps content inside
+// an ~800x800 safe area.
 export const SHARE_CARD_WIDTH = 360;
-export const SHARE_CARD_HEIGHT = 640;
+export const SHARE_CARD_HEIGHT = 360;
+const SAFE_PADDING = 48;
 
 interface ShareCardProps {
   score: number;
@@ -29,7 +37,7 @@ export function ShareCard({ score, trace, isPersonalBest, percentileText }: Shar
         <Text style={styles.percentile}>{percentileText ?? formatPercentile(score)}</Text>
 
         <View style={styles.traceWrapper}>
-          <SeismographTrace values={trace} width={SHARE_CARD_WIDTH - 96} height={64} />
+          <SeismographTrace values={trace} width={SHARE_CARD_WIDTH - SAFE_PADDING * 2} height={44} />
         </View>
 
         {isPersonalBest && <Text style={styles.personalBest}>PERSONAL BEST</Text>}
@@ -47,46 +55,43 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 48,
+    paddingHorizontal: SAFE_PADDING,
+    paddingVertical: SAFE_PADDING,
+    gap: 12,
   },
   wordmark: {
-    position: 'absolute',
-    top: 56,
     color: colors.textTertiary,
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '700',
     letterSpacing: 2,
   },
   center: {
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
   },
   score: {
     color: colors.textPrimary,
-    fontSize: 80,
-    fontWeight: '700',
-    fontVariant: ['tabular-nums'],
+    fontFamily: fontFamily.monoBold,
+    fontSize: 48,
   },
   percentile: {
-    color: colors.accent,
-    fontSize: 20,
+    color: colors.accentAmber,
+    fontSize: 16,
     fontWeight: '600',
   },
   traceWrapper: {
-    marginTop: 24,
+    marginTop: 14,
   },
   personalBest: {
-    marginTop: 24,
-    color: colors.textPrimary,
-    fontSize: 14,
+    marginTop: 14,
+    color: colors.accentGreen,
+    fontSize: 12,
     fontWeight: '700',
     letterSpacing: 1.5,
   },
   tagline: {
-    position: 'absolute',
-    bottom: 56,
     color: colors.textSecondary,
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: '500',
   },
 });
