@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import { TRACE_LENGTH, useMovementSession } from '../lib/sensors';
@@ -30,17 +31,18 @@ function downsample(values: number[], targetLength: number): number[] {
   return result;
 }
 
-// Two independent anti-propping measures. First, the player must keep a
-// finger on the screen from the start of the countdown through the end of
-// the run, since letting go to set the phone down cancels it immediately.
-// Second, sensors.ts flags when the phone is lying flat (gravity almost
-// entirely on the screen-perpendicular axis), since that's true regardless
-// of whether a finger is still touching the glass. Together they close the
-// two easy exploits: walking away, and propping flat while still touching
-// the screen. Neither catches every possible propping method (e.g. leaned
-// upright against something), and the hold gesture itself doesn't have a
-// clean screen-reader equivalent yet, both known gaps for later.
+// Three layered anti-propping measures. First, the player must keep a finger
+// on the screen from the start of the countdown through the end of the run,
+// since letting go to set the phone down cancels it immediately. Second,
+// sensors.ts flags when the phone is lying flat (gravity almost entirely on
+// the screen-perpendicular axis), since that's true regardless of whether a
+// finger is still touching the glass. Third, scoring.ts rejects a run whose
+// overall movement is suspiciously below what a real hand's physiological
+// tremor can achieve, which catches propping at any angle, not just flat
+// surfaces. The hold gesture itself still doesn't have a clean screen-reader
+// equivalent, a known gap for later.
 export function PlayScreen({ navigation }: Props) {
+  const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const { trace, start, stop, getFrames, isFlat } = useMovementSession();
   const [phase, setPhase] = useState<Phase>('idle');
@@ -183,7 +185,11 @@ export function PlayScreen({ navigation }: Props) {
     >
       {phase === 'idle' && (
         <Pressable
-          style={({ pressed }) => [styles.homeButton, pressed && styles.homeButtonPressed]}
+          style={({ pressed }) => [
+            styles.homeButton,
+            { top: insets.top + spacing.md },
+            pressed && styles.homeButtonPressed,
+          ]}
           onPress={handleGoHome}
           hitSlop={8}
           accessibilityRole="button"
@@ -231,7 +237,6 @@ const styles = StyleSheet.create({
   },
   homeButton: {
     position: 'absolute',
-    top: spacing.xl,
     left: spacing.lg,
     backgroundColor: colors.surface,
     borderRadius: 20,

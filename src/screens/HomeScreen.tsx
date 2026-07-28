@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import { getBestScore } from '../lib/storage';
@@ -10,6 +11,7 @@ import { colors, spacing } from '../theme/colors';
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 export function HomeScreen({ navigation }: Props) {
+  const insets = useSafeAreaInsets();
   const [bestScore, setBestScore] = useState<number | null>(null);
 
   useFocusEffect(
@@ -40,7 +42,7 @@ export function HomeScreen({ navigation }: Props) {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top + spacing.md }]}>
       <View style={styles.topRow}>
         <Pressable
           style={({ pressed }) => [styles.chip, pressed && styles.chipPressed]}
@@ -97,7 +99,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xl,
     paddingBottom: spacing.xxl,
     justifyContent: 'space-between',
   },
