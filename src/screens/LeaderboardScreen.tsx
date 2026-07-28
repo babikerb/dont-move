@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -28,6 +28,9 @@ export function LeaderboardScreen() {
   const [myRank, setMyRank] = useState<MyRank | null>(null);
   const [myUserId, setMyUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [beatBanner, setBeatBanner] = useState(false);
+  const myRankRef = useRef<MyRank | null>(null);
+  myRankRef.current = myRank;
 
   const load = useCallback(async (w: LeaderboardWindow) => {
     setLoading(true);
@@ -50,6 +53,47 @@ export function LeaderboardScreen() {
     }, [window])
   );
 
+  // Live leaderboard movement (CLAUDE.md Phase 5): a database trigger
+  // broadcasts on every new run insert (see the `leaderboard` Realtime
+  // topic), since Postgres Changes on public.runs would be filtered down to
+  // only the subscriber's own rows by its RLS policy. The broadcast is just
+  // a "something changed" ping - we always refetch for the true ranked view
+  // rather than trust a client-reconstructed one.
+  useEffect(() => {
+    let cancelled = false;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+
+    supabase.realtime.setAuth().then(() => {
+      if (cancelled) return;
+      channel = supabase
+        .channel('leaderboard', { config: { private: true } })
+        .on('broadcast', { event: 'INSERT' }, (message: any) => {
+          load(window);
+
+          const newScore = Number(message?.payload?.record?.score);
+          if (
+            !Number.isNaN(newScore) &&
+            myRankRef.current &&
+            newScore > myRankRef.current.score
+          ) {
+            setBeatBanner(true);
+          }
+        })
+        .subscribe();
+    });
+
+    return () => {
+      cancelled = true;
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, [window, load]);
+
+  useEffect(() => {
+    if (!beatBanner) return;
+    const timer = setTimeout(() => setBeatBanner(false), 4000);
+    return () => clearTimeout(timer);
+  }, [beatBanner]);
+
   const handleSelectWindow = (w: LeaderboardWindow) => {
     tapFeedback();
     setWindow(w);
@@ -60,6 +104,12 @@ export function LeaderboardScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top + spacing.md }]}>
       <Text style={styles.title}>Leaderboard</Text>
+
+      {beatBanner && (
+        <View style={styles.beatBanner}>
+          <Text style={styles.beatBannerText}>Someone just beat your score</Text>
+        </View>
+      )}
 
       <View style={styles.tabRow}>
         {WINDOWS.map((w) => (
@@ -127,6 +177,18 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '700',
     marginBottom: spacing.md,
+  },
+  beatBanner: {
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    paddingVertical: spacing.sm,
+    marginBottom: spacing.md,
+    alignItems: 'center',
+  },
+  beatBannerText: {
+    color: colors.accent,
+    fontSize: 14,
+    fontWeight: '700',
   },
   tabRow: {
     flexDirection: 'row',
