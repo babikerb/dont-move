@@ -22,7 +22,7 @@ function formatProvider(provider: string | null): string {
   return provider.toUpperCase();
 }
 
-const BENEFITS = ['Appear on the leaderboard', 'Challenge friends', 'Sync progress across devices'];
+const BENEFITS = ['Appear on the leaderboard', 'Sync progress across devices'];
 
 export function AccountScreen({ navigation }: Props) {
   const queryClient = useQueryClient();

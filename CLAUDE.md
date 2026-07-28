@@ -109,7 +109,6 @@ By default:
 Users should only be prompted to create an account when they attempt to use features that require one, such as:
 
 - Appearing on global leaderboards
-- Challenging friends
 - Syncing progress across devices
 - Participating in online competitions
 - Restoring progress after reinstalling the app
@@ -341,7 +340,6 @@ Tabs:
 
 - Global
 - Country
-- Friends
 - Today
 - This Week
 - All Time
@@ -395,7 +393,7 @@ Used sparingly.
 
 Examples:
 
-- A friend beat your score.
+- Someone beat your score.
 - New daily challenge.
 - You lost your leaderboard position.
 
@@ -556,7 +554,6 @@ Haptics should reinforce meaningful moments only.
 
 # Future Features
 
-- Friend challenges
 - Replay visualization (scrubbable, zoomed-in version of the seismograph trace)
 - Movement graph (full-run detail view built on the same trace data)
 - Verified competition mode

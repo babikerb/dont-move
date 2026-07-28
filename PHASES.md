@@ -78,11 +78,11 @@ Exit criteria: signing in mid-session migrates all local history with nothing lo
 
 Goal: turn scores into social competition.
 
-- Leaderboard screen: Global, Country, Friends, Today, This Week, and All Time tabs
+- Leaderboard screen: Global, Country, Today, This Week, and All Time tabs
 - Only highest score per user counts
 - Replace estimated percentiles with live percentiles computed from real Supabase data
-- Friend challenge flow (send, accept, compare scores)
 - Supabase Realtime for live leaderboard movement where it adds value (for example, "someone just beat you")
+- Friend challenges deliberately dropped: leaderboards stay read-only, and the Share Card's "Can you beat me?" flow already covers "beat a friend" without a friend graph, requests, or any user-to-user interaction to build or moderate
 
 Exit criteria: percentiles and ranks reflect real global data, not the static table.
 
@@ -96,7 +96,7 @@ Goal: real accounts now exist (Phase 4 shipped Apple Sign In), so App Store/Play
 - A Supabase Edge Function (`delete-account`) using the service_role key handles the actual deletion via `auth.admin.deleteUser()` - the client's publishable key can never delete an `auth.users` row directly. The function always deletes the caller's own id, derived server-side from their verified JWT, never a client-supplied id. `public.users` and `public.runs` cascade-delete automatically via their existing foreign keys (verified against a disposable test account), so no separate cleanup is needed
 - Strongly worded, unambiguous confirmation before deleting (irreversible: loses synced history, avatar, stats, leaderboard position)
 - Local device data (AsyncStorage best score/history) is untouched by account deletion, same as sign-out - only the account and its synced Supabase data are removed
-- Blocking/reporting: deferred. The app currently has no user-to-user interaction (the leaderboard is read-only viewing), so Apple's user-generated-content guideline (1.2) requiring a block mechanism doesn't apply yet. Build it alongside Phase 5's still-unbuilt Friend Challenges, which is the first place blocking becomes meaningful (blocking someone from sending a friend request)
+- Blocking/reporting: not planned. Friend challenges were deliberately dropped from Phase 5, so the app has no user-to-user interaction anywhere (the leaderboard is read-only viewing) - Apple's user-generated-content guideline (1.2) requiring a block mechanism doesn't apply. Revisit only if a future feature actually introduces messaging or direct interaction between players
 
 Exit criteria: a signed-in user can fully delete their account and all associated data from within the app, with nothing left behind.
 
