@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import type { ProfileScreenProps } from '../navigation/TabNavigator';
 import { Header } from '../components/Header';
 import { ListRow } from '../components/ListRow';
@@ -112,8 +113,17 @@ export function ProfileScreen({ navigation }: ProfileScreenProps) {
           ) : (
             statRows.map((row) => <ListRow key={row.label} label={row.label} value={row.value} />)
           )}
-          <ListRow label="VIEW ALL RUNS" onPress={handleViewAllRuns} border={false} />
         </View>
+
+        <Pressable
+          style={({ pressed }) => [styles.viewAllRuns, pressed && styles.viewAllRunsPressed]}
+          onPress={handleViewAllRuns}
+          accessibilityRole="button"
+          accessibilityLabel="View all runs"
+        >
+          <Text style={styles.viewAllRunsText}>VIEW ALL RUNS</Text>
+          <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+        </Pressable>
       </ScrollView>
     </View>
   );
@@ -156,6 +166,24 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
+  },
+  viewAllRuns: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+  },
+  viewAllRunsPressed: {
+    opacity: 0.7,
+  },
+  viewAllRunsText: {
+    color: colors.textPrimary,
+    fontSize: type.body,
+    fontWeight: '500',
   },
   statsSkeleton: {
     paddingVertical: spacing.sm,
