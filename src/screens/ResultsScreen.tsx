@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AccessibilityInfo,
   Alert,
@@ -9,9 +9,12 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
+import { captureRef } from 'react-native-view-shot';
+import * as Sharing from 'expo-sharing';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import { SeismographTrace } from '../components/SeismographTrace';
+import { ShareCard } from '../components/ShareCard';
 import { formatPercentile } from '../lib/percentile';
 import { getResultMessage } from '../lib/resultMessages';
 import { hapticPersonalBest } from '../lib/haptics';
@@ -26,6 +29,8 @@ export function ResultsScreen({ navigation, route }: Props) {
   const { width } = useWindowDimensions();
   const scoreScale = useRef(new Animated.Value(0.85)).current;
   const scoreOpacity = useRef(new Animated.Value(0)).current;
+  const shareCardRef = useRef<View>(null);
+  const [isSharing, setIsSharing] = useState(false);
 
   // Picked once per run so it doesn't change on re-render, and skipped for a
   // personal best since the PERSONAL BEST banner already carries that moment.
@@ -78,9 +83,26 @@ export function ResultsScreen({ navigation, route }: Props) {
     navigation.replace('Play');
   };
 
-  const handleShare = () => {
+  const handleShare = async () => {
     tapFeedback();
-    Alert.alert('Share', 'Coming soon.');
+    if (isSharing) return;
+
+    setIsSharing(true);
+    try {
+      const available = await Sharing.isAvailableAsync();
+      if (!available) {
+        Alert.alert('Sharing unavailable', 'Sharing is not available on this device.');
+        return;
+      }
+
+      const uri = await captureRef(shareCardRef, { format: 'png', quality: 1 });
+      const fileUri = uri.startsWith('file://') ? uri : `file://${uri}`;
+      await Sharing.shareAsync(fileUri, { mimeType: 'image/png', dialogTitle: 'Share your score' });
+    } catch {
+      Alert.alert('Share failed', 'Something went wrong creating your share image.');
+    } finally {
+      setIsSharing(false);
+    }
   };
 
   const handleHome = () => {
@@ -112,6 +134,12 @@ export function ResultsScreen({ navigation, route }: Props) {
         {isPersonalBest && <Text style={styles.personalBest}>PERSONAL BEST</Text>}
       </View>
 
+      <View style={styles.offscreen} collapsable={false}>
+        <View ref={shareCardRef} collapsable={false}>
+          <ShareCard score={score} trace={trace} isPersonalBest={isPersonalBest} />
+        </View>
+      </View>
+
       <View style={styles.actions}>
         <Pressable
           style={[styles.button, styles.primaryButton]}
@@ -124,10 +152,11 @@ export function ResultsScreen({ navigation, route }: Props) {
         <Pressable
           style={styles.button}
           onPress={handleShare}
+          disabled={isSharing}
           accessibilityRole="button"
           accessibilityLabel="Share"
         >
-          <Text style={styles.secondaryButtonText}>Share</Text>
+          <Text style={styles.secondaryButtonText}>{isSharing ? 'Sharing...' : 'Share'}</Text>
         </Pressable>
         <Pressable
           style={styles.button}
@@ -182,6 +211,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     letterSpacing: 1.5,
+  },
+  offscreen: {
+    position: 'absolute',
+    top: 0,
+    left: -10000,
   },
   actions: {
     gap: spacing.sm,

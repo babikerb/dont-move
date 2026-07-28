@@ -48,13 +48,13 @@ Exit criteria: launch, first run, and result feel like an Apple fitness app, not
 
 ---
 
-## Phase 3: Share Card
+## Phase 3: Share Card (done)
 
 Goal: every run produces something worth posting, still fully offline.
 
-- Share card renderer: dark background, score, percentile, seismograph trace, "Can you beat me?", QR code pointing to a placeholder app link
-- Native share sheet integration
-- Verify legibility and crop on Instagram Stories, TikTok, Discord, and X aspect ratios
+- Share card renderer (a 360x640 off-screen view, captured to a PNG): dark background, score, percentile, seismograph trace, PERSONAL BEST when applicable, "Can you beat me?", QR code pointing to a placeholder app link (a reserved documentation domain, to be replaced with the real store link in Phase 7)
+- Native share sheet integration via react-native-view-shot (bundled in Expo Go, no dev client needed) and expo-sharing
+- Legibility and crop against Instagram Stories, TikTok, Discord, and X aspect ratios is still to be checked on a real device across those apps
 
 Exit criteria: a generated share image is indistinguishable in polish from a hand-designed asset.
 
