@@ -11,9 +11,13 @@ interface ShareCardProps {
   score: number;
   trace: number[];
   isPersonalBest: boolean;
+  // Passed down from Results so the card shows the exact same percentile
+  // (live if it resolved there, the static estimate otherwise) rather than
+  // recomputing its own and risking the two disagreeing.
+  percentileText?: string;
 }
 
-export function ShareCard({ score, trace, isPersonalBest }: ShareCardProps) {
+export function ShareCard({ score, trace, isPersonalBest, percentileText }: ShareCardProps) {
   return (
     <View style={styles.card}>
       <Text style={styles.wordmark}>DON'T MOVE</Text>
@@ -22,7 +26,7 @@ export function ShareCard({ score, trace, isPersonalBest }: ShareCardProps) {
         <Text style={styles.score} numberOfLines={1} adjustsFontSizeToFit>
           {score.toFixed(2)}
         </Text>
-        <Text style={styles.percentile}>{formatPercentile(score)}</Text>
+        <Text style={styles.percentile}>{percentileText ?? formatPercentile(score)}</Text>
 
         <View style={styles.traceWrapper}>
           <SeismographTrace values={trace} width={SHARE_CARD_WIDTH - 96} height={64} />

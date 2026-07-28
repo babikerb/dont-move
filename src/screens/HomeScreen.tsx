@@ -1,16 +1,13 @@
 import React, { useCallback, useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../navigation/RootNavigator';
+import type { HomeScreenProps } from '../navigation/TabNavigator';
 import { getBestScore } from '../lib/storage';
 import { tapFeedback } from '../lib/feedback';
 import { colors, spacing } from '../theme/colors';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
-
-export function HomeScreen({ navigation }: Props) {
+export function HomeScreen({ navigation }: HomeScreenProps) {
   const insets = useSafeAreaInsets();
   const [bestScore, setBestScore] = useState<number | null>(null);
 
@@ -31,39 +28,8 @@ export function HomeScreen({ navigation }: Props) {
     navigation.navigate('Play');
   };
 
-  const handleLeaderboard = () => {
-    tapFeedback();
-    Alert.alert('Leaderboard', 'Coming soon.');
-  };
-
-  const handleSettings = () => {
-    tapFeedback();
-    navigation.navigate('Settings');
-  };
-
   return (
-    <View style={[styles.container, { paddingTop: insets.top + spacing.md }]}>
-      <View style={styles.topRow}>
-        <Pressable
-          style={({ pressed }) => [styles.chip, pressed && styles.chipPressed]}
-          onPress={handleLeaderboard}
-          hitSlop={8}
-          accessibilityRole="button"
-          accessibilityLabel="Leaderboard"
-        >
-          <Text style={styles.chipText}>Leaderboard</Text>
-        </Pressable>
-        <Pressable
-          style={({ pressed }) => [styles.chip, pressed && styles.chipPressed]}
-          onPress={handleSettings}
-          hitSlop={8}
-          accessibilityRole="button"
-          accessibilityLabel="Settings"
-        >
-          <Text style={styles.chipText}>Settings</Text>
-        </Pressable>
-      </View>
-
+    <View style={[styles.container, { paddingTop: insets.top + spacing.xxl }]}>
       <View style={styles.center}>
         <Text style={styles.logo}>DON'T MOVE</Text>
 
@@ -101,26 +67,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.xxl,
     justifyContent: 'space-between',
-  },
-  topRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  chip: {
-    backgroundColor: colors.surface,
-    borderRadius: 20,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm + 2,
-    minHeight: 44,
-    justifyContent: 'center',
-  },
-  chipPressed: {
-    opacity: 0.7,
-  },
-  chipText: {
-    color: colors.textPrimary,
-    fontSize: 14,
-    fontWeight: '600',
   },
   center: {
     flex: 1,

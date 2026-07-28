@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import { isHapticsEnabled, isSoundEnabled, setHapticsEnabled, setSoundEnabled } from '../lib/settings';
 import { tapFeedback } from '../lib/feedback';
@@ -9,6 +10,7 @@ import { colors, spacing } from '../theme/colors';
 type Props = NativeStackScreenProps<RootStackParamList, 'Settings'>;
 
 export function SettingsScreen({ navigation }: Props) {
+  const insets = useSafeAreaInsets();
   const [soundOn, setSoundOn] = useState(isSoundEnabled());
   const [hapticsOn, setHapticsOn] = useState(isHapticsEnabled());
 
@@ -33,7 +35,7 @@ export function SettingsScreen({ navigation }: Props) {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top + spacing.md }]}>
       <View style={styles.topRow}>
         <Text style={styles.title}>Settings</Text>
         <Pressable onPress={handleDone} hitSlop={16} accessibilityRole="button" accessibilityLabel="Done">
@@ -41,7 +43,7 @@ export function SettingsScreen({ navigation }: Props) {
         </Pressable>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.section}>
           <View style={styles.row}>
             <Text style={styles.rowLabel}>Sound</Text>
@@ -99,14 +101,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+    paddingHorizontal: spacing.lg,
   },
   topRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xl,
-    paddingBottom: spacing.md,
+    paddingBottom: spacing.lg,
   },
   title: {
     color: colors.textPrimary,
@@ -119,7 +120,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   content: {
-    paddingHorizontal: spacing.lg,
     paddingBottom: spacing.xxl,
     gap: spacing.lg,
   },

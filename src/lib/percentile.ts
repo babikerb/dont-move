@@ -33,8 +33,11 @@ export function estimatePercentileTop(score: number): number {
   return ANCHORS[ANCHORS.length - 1].top;
 }
 
-export function formatPercentile(score: number): string {
-  const topPercent = estimatePercentileTop(score);
+export function formatTopPercent(topPercent: number): string {
   const rounded = topPercent < 1 ? Math.round(topPercent * 10) / 10 : Math.round(topPercent);
   return `Top ${rounded}%`;
+}
+
+export function formatPercentile(score: number): string {
+  return formatTopPercent(estimatePercentileTop(score));
 }

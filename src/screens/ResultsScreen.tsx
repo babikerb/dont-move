@@ -15,7 +15,8 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import { SeismographTrace } from '../components/SeismographTrace';
 import { ShareCard } from '../components/ShareCard';
-import { formatPercentile } from '../lib/percentile';
+import { formatPercentile, formatTopPercent } from '../lib/percentile';
+import { fetchScorePercentile } from '../lib/leaderboard';
 import { getResultMessage } from '../lib/resultMessages';
 import { hapticPersonalBest } from '../lib/haptics';
 import { tapFeedback } from '../lib/feedback';
@@ -31,6 +32,22 @@ export function ResultsScreen({ navigation, route }: Props) {
   const scoreOpacity = useRef(new Animated.Value(0)).current;
   const shareCardRef = useRef<View>(null);
   const [isSharing, setIsSharing] = useState(false);
+  // Static estimate renders immediately so the screen never waits on a
+  // network round trip; swapped for the live value from Supabase if/when it
+  // resolves. Falls back to staying on the estimate when offline.
+  const [percentileText, setPercentileText] = useState(() => formatPercentile(score));
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchScorePercentile(score).then((topPercent) => {
+      if (cancelled || topPercent === null) return;
+      setPercentileText(formatTopPercent(topPercent));
+    });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Picked once per run so it doesn't change on re-render, and skipped for a
   // personal best since the PERSONAL BEST banner already carries that moment.
@@ -118,7 +135,7 @@ export function ResultsScreen({ navigation, route }: Props) {
         >
           {score.toFixed(2)}
         </Animated.Text>
-        <Text style={styles.percentile}>{formatPercentile(score)}</Text>
+        <Text style={styles.percentile}>{percentileText}</Text>
         {resultMessage && <Text style={styles.resultMessage}>{resultMessage}</Text>}
 
         <View style={styles.traceWrapper}>
@@ -130,7 +147,12 @@ export function ResultsScreen({ navigation, route }: Props) {
 
       <View style={styles.offscreen} collapsable={false}>
         <View ref={shareCardRef} collapsable={false}>
-          <ShareCard score={score} trace={trace} isPersonalBest={isPersonalBest} />
+          <ShareCard
+            score={score}
+            trace={trace}
+            isPersonalBest={isPersonalBest}
+            percentileText={percentileText}
+          />
         </View>
       </View>
 
