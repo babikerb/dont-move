@@ -92,8 +92,8 @@ Exit criteria: percentiles and ranks reflect real global data, not the static ta
 
 Goal: real accounts now exist (Phase 4 shipped Apple Sign In), so App Store/Play Store account requirements are live, not a someday problem.
 
-- Account deletion: a "Delete Account" action on the Account screen, initiated entirely in-app (Apple App Store Review Guideline 5.1.1(v) - a support email or web link alone doesn't satisfy this)
-- A Supabase Edge Function using the service_role key handles the actual deletion via `auth.admin.deleteUser()` - the client's publishable key can never delete an `auth.users` row directly. `public.users` and `public.runs` cascade-delete automatically via their existing foreign keys, so no separate cleanup is needed
+- Account deletion (done): a "Delete Account" action on the Account screen, initiated entirely in-app (Apple App Store Review Guideline 5.1.1(v) - a support email or web link alone doesn't satisfy this)
+- A Supabase Edge Function (`delete-account`) using the service_role key handles the actual deletion via `auth.admin.deleteUser()` - the client's publishable key can never delete an `auth.users` row directly. The function always deletes the caller's own id, derived server-side from their verified JWT, never a client-supplied id. `public.users` and `public.runs` cascade-delete automatically via their existing foreign keys (verified against a disposable test account), so no separate cleanup is needed
 - Strongly worded, unambiguous confirmation before deleting (irreversible: loses synced history, avatar, stats, leaderboard position)
 - Local device data (AsyncStorage best score/history) is untouched by account deletion, same as sign-out - only the account and its synced Supabase data are removed
 - Blocking/reporting: deferred. The app currently has no user-to-user interaction (the leaderboard is read-only viewing), so Apple's user-generated-content guideline (1.2) requiring a block mechanism doesn't apply yet. Build it alongside Phase 5's still-unbuilt Friend Challenges, which is the first place blocking becomes meaningful (blocking someone from sending a friend request)

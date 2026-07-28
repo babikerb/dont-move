@@ -56,3 +56,17 @@ export async function fetchAccountInfo(): Promise<AccountInfo> {
 export async function signOutToGuest(): Promise<void> {
   await supabase.auth.signOut();
 }
+
+// Calls the delete-account Edge Function (service_role only - the client's
+// publishable key can never delete an auth.users row directly). The
+// function always deletes the caller's own id, derived server-side from
+// their verified JWT. public.users and public.runs cascade-delete via their
+// foreign keys, so there's nothing else to clean up client-side beyond
+// ending the local session.
+export async function deleteMyAccount(): Promise<boolean> {
+  const { error } = await supabase.functions.invoke('delete-account', { method: 'POST' });
+  if (error) return false;
+
+  await supabase.auth.signOut();
+  return true;
+}

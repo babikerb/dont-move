@@ -22,7 +22,7 @@ const WINDOWS: { key: LeaderboardWindow; label: string }[] = [
 
 const RESET_NOTE: Partial<Record<LeaderboardWindow, string>> = {
   today: 'Resets daily at 12:00 AM PST',
-  week: 'Resets weekly, Sunday 12:00 AM PST',
+  week: 'Resets weekly on Sunday 12:00 AM PST',
 };
 
 function RowSkeleton() {

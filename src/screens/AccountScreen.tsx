@@ -9,11 +9,11 @@ import { Header } from '../components/Header';
 import { Button } from '../components/Button';
 import { ListRow } from '../components/ListRow';
 import { GoogleIcon } from '../components/GoogleIcon';
-import { AccountInfo, fetchAccountInfo, signOutToGuest } from '../lib/supabase';
+import { AccountInfo, deleteMyAccount, fetchAccountInfo, signOutToGuest } from '../lib/supabase';
 import { isAppleSignInAvailable, signInWithApple } from '../lib/appleAuth';
 import { hapticPersonalBest } from '../lib/haptics';
 import { tapFeedback } from '../lib/feedback';
-import { colors, radius, spacing } from '../theme/colors';
+import { colors, radius, spacing, type } from '../theme/colors';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Account'>;
 
@@ -92,6 +92,33 @@ export function AccountScreen({ navigation }: Props) {
     ]);
   };
 
+  const handleDeleteAccount = () => {
+    if (busy) return;
+    tapFeedback();
+    Alert.alert(
+      'Delete your account?',
+      'This permanently deletes your account, synced run history, avatar, stats, and leaderboard position. This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete Account',
+          style: 'destructive',
+          onPress: async () => {
+            setBusy(true);
+            const ok = await deleteMyAccount();
+            setBusy(false);
+            if (ok) {
+              invalidateEverything();
+              refresh();
+            } else {
+              Alert.alert('Delete failed', 'Something went wrong. Try again.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <View style={styles.container}>
       <Header title="Account" action={{ label: 'Close', onPress: handleClose }} divider />
@@ -133,6 +160,16 @@ export function AccountScreen({ navigation }: Props) {
             </View>
 
             <Button label="Sign Out" onPress={handleSignOut} variant="danger" disabled={busy} />
+
+            <Pressable
+              onPress={handleDeleteAccount}
+              disabled={busy}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel="Delete Account"
+            >
+              <Text style={styles.deleteText}>Delete Account</Text>
+            </Pressable>
           </View>
         )}
       </View>
@@ -182,6 +219,12 @@ const styles = StyleSheet.create({
   },
   accountBlock: {
     gap: spacing.xl,
+  },
+  deleteText: {
+    color: colors.accentRed,
+    fontSize: type.caption,
+    fontWeight: '500',
+    textAlign: 'center',
   },
   section: {
     borderWidth: 1,
