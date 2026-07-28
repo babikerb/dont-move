@@ -1,11 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import { Header } from '../components/Header';
+import { Skeleton } from '../components/Skeleton';
 import { fetchMyRuns, RunHistoryEntry } from '../lib/runs';
 import { tapFeedback } from '../lib/feedback';
 import { colors, fontFamily, spacing, type } from '../theme/colors';
+
+function RowSkeleton() {
+  return (
+    <View style={styles.row}>
+      <Skeleton width="45%" height={14} style={{ flex: 1 }} />
+      <Skeleton width={28} height={14} />
+      <Skeleton width={64} height={16} />
+    </View>
+  );
+}
 
 type Props = NativeStackScreenProps<RootStackParamList, 'RunHistory'>;
 
@@ -39,8 +50,10 @@ export function RunHistoryScreen({ navigation }: Props) {
       <Header title="Run History" action={{ label: 'Close', onPress: handleClose }} divider />
 
       {runs === null ? (
-        <View style={styles.center}>
-          <ActivityIndicator color={colors.accentGreen} />
+        <View style={styles.list}>
+          {Array.from({ length: 10 }).map((_, i) => (
+            <RowSkeleton key={i} />
+          ))}
         </View>
       ) : runs.length === 0 ? (
         <View style={styles.center}>

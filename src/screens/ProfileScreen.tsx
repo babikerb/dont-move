@@ -1,10 +1,12 @@
-import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { ProfileScreenProps } from '../navigation/TabNavigator';
 import { Header } from '../components/Header';
 import { ListRow } from '../components/ListRow';
 import { Avatar } from '../components/Avatar';
 import { DevBadge } from '../components/DevBadge';
+import { Skeleton } from '../components/Skeleton';
+import { SignInBanner } from '../components/SignInBanner';
 import { useMyProfile } from '../lib/profileQuery';
 import { useMyStats } from '../lib/statsQuery';
 import { tapFeedback } from '../lib/feedback';
@@ -17,8 +19,11 @@ function formatDate(iso: string): string {
 }
 
 export function ProfileScreen({ navigation }: ProfileScreenProps) {
-  const { data: profile, isPending: profilePending } = useMyProfile();
-  const { data: stats, isPending: statsPending } = useMyStats();
+  const { data: profile, isPending: profilePending, refetch: refetchProfile } = useMyProfile();
+  const { data: stats, isPending: statsPending, refetch: refetchStats } = useMyStats();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const isGuest = !profilePending && !profile;
 
   const handleChangeAvatar = () => {
     tapFeedback();
@@ -35,6 +40,17 @@ export function ProfileScreen({ navigation }: ProfileScreenProps) {
     navigation.navigate('RunHistory');
   };
 
+  const handleSignIn = () => {
+    tapFeedback();
+    navigation.navigate('Account');
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([refetchProfile(), refetchStats()]);
+    setRefreshing(false);
+  };
+
   const statRows: { label: string; value: string }[] = statsPending
     ? []
     : [
@@ -48,7 +64,13 @@ export function ProfileScreen({ navigation }: ProfileScreenProps) {
     <View style={styles.container}>
       <Header title="Profile" action={{ label: 'Settings', onPress: handleSettings }} divider />
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.accentGreen} />
+        }
+      >
         <View style={styles.avatarBlock}>
           <Pressable
             onPress={handleChangeAvatar}
@@ -56,13 +78,13 @@ export function ProfileScreen({ navigation }: ProfileScreenProps) {
             accessibilityLabel="Change avatar"
           >
             {profilePending ? (
-              <View style={styles.avatarSkeleton} />
+              <Skeleton width={88} height={88} cornerRadius={radius.lg} />
             ) : (
               <Avatar id={profile?.avatarId} size={88} />
             )}
           </Pressable>
           <View style={styles.usernameRow}>
-            <Text style={styles.username}>{profilePending ? ' ' : profile?.username ?? 'Player'}</Text>
+            <Text style={styles.username}>{profilePending ? ' ' : profile?.username ?? 'GUEST'}</Text>
             {profile?.isDev && <DevBadge />}
           </View>
           <Pressable onPress={handleChangeAvatar} accessibilityRole="button">
@@ -70,10 +92,22 @@ export function ProfileScreen({ navigation }: ProfileScreenProps) {
           </Pressable>
         </View>
 
+        {isGuest && (
+          <SignInBanner
+            message="Sign in to sync your profile and stats."
+            onPress={handleSignIn}
+          />
+        )}
+
         <View style={styles.section}>
           {statsPending ? (
-            <View style={styles.statsLoading}>
-              <Text style={styles.statsLoadingText}>LOADING STATS...</Text>
+            <View style={styles.statsSkeleton}>
+              {Array.from({ length: 4 }).map((_, i) => (
+                <View key={i} style={styles.statSkeletonRow}>
+                  <Skeleton width="40%" height={14} />
+                  <Skeleton width={48} height={14} />
+                </View>
+              ))}
             </View>
           ) : (
             statRows.map((row) => <ListRow key={row.label} label={row.label} value={row.value} />)
@@ -100,12 +134,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.xs,
   },
-  avatarSkeleton: {
-    width: 88,
-    height: 88,
-    borderRadius: radius.lg,
-    backgroundColor: colors.surface,
-  },
   usernameRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -129,13 +157,14 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
   },
-  statsLoading: {
-    paddingVertical: spacing.lg,
-    alignItems: 'center',
+  statsSkeleton: {
+    paddingVertical: spacing.sm,
+    gap: spacing.md,
   },
-  statsLoadingText: {
-    color: colors.textSecondary,
-    fontSize: type.caption,
-    letterSpacing: 0.5,
+  statSkeletonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: spacing.xs,
   },
 });

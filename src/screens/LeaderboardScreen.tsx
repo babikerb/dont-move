@@ -1,9 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { Header } from '../components/Header';
 import { Avatar } from '../components/Avatar';
 import { DevBadge } from '../components/DevBadge';
+import { Skeleton } from '../components/Skeleton';
+import { SignInBanner } from '../components/SignInBanner';
 import {
   fetchLeaderboard,
   fetchMyRank,
@@ -11,9 +14,10 @@ import {
   LeaderboardWindow,
   MyRank,
 } from '../lib/leaderboard';
-import { supabase } from '../lib/supabase';
+import { supabase, isAnonymousSession } from '../lib/supabase';
 import { tapFeedback } from '../lib/feedback';
 import { colors, fontFamily, radius, spacing, type } from '../theme/colors';
+import type { LeaderboardScreenProps } from '../navigation/TabNavigator';
 
 const WINDOWS: { key: LeaderboardWindow; label: string }[] = [
   { key: 'today', label: 'Today' },
@@ -21,27 +25,51 @@ const WINDOWS: { key: LeaderboardWindow; label: string }[] = [
   { key: 'all_time', label: 'All Time' },
 ];
 
-export function LeaderboardScreen() {
+const RESET_NOTE: Partial<Record<LeaderboardWindow, string>> = {
+  today: 'Resets daily at 12:00 AM PST',
+  week: 'Resets weekly, Sunday 12:00 AM PST',
+};
+
+function RowSkeleton() {
+  return (
+    <View style={styles.row}>
+      <Skeleton width={20} height={16} />
+      <Skeleton width={32} height={32} cornerRadius={radius.lg} />
+      <Skeleton width="40%" height={16} style={{ flex: 1 }} />
+      <Skeleton width={50} height={16} />
+    </View>
+  );
+}
+
+export function LeaderboardScreen({ navigation }: LeaderboardScreenProps) {
   const [window, setWindow] = useState<LeaderboardWindow>('today');
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [myRank, setMyRank] = useState<MyRank | null>(null);
   const [myUserId, setMyUserId] = useState<string | null>(null);
+  const [isGuest, setIsGuest] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [beatBanner, setBeatBanner] = useState(false);
   const myRankRef = useRef<MyRank | null>(null);
   myRankRef.current = myRank;
 
-  const load = useCallback(async (w: LeaderboardWindow) => {
-    setLoading(true);
-    const [{ data }, list, rank] = await Promise.all([
+  const load = useCallback(async (w: LeaderboardWindow, isRefresh = false) => {
+    if (isRefresh) setRefreshing(true);
+    else setLoading(true);
+
+    const [{ data }, list, rank, guest] = await Promise.all([
       supabase.auth.getSession(),
       fetchLeaderboard(w),
       fetchMyRank(w),
+      isAnonymousSession(),
     ]);
     setMyUserId(data.session?.user.id ?? null);
     setEntries(list);
     setMyRank(rank);
-    setLoading(false);
+    setIsGuest(guest);
+
+    if (isRefresh) setRefreshing(false);
+    else setLoading(false);
   }, []);
 
   useFocusEffect(
@@ -98,6 +126,15 @@ export function LeaderboardScreen() {
     setWindow(w);
   };
 
+  const handleRefresh = () => {
+    load(window, true);
+  };
+
+  const handleSignIn = () => {
+    tapFeedback();
+    navigation.navigate('Account');
+  };
+
   const amInTopList = myUserId !== null && entries.some((e) => e.userId === myUserId);
 
   return (
@@ -108,6 +145,12 @@ export function LeaderboardScreen() {
         {beatBanner && (
           <View style={styles.beatBanner}>
             <Text style={styles.beatBannerText}>SOMEONE JUST BEAT YOUR SCORE</Text>
+          </View>
+        )}
+
+        {!loading && isGuest && (
+          <View style={styles.signInBanner}>
+            <SignInBanner message="Sign in to appear on the leaderboard." onPress={handleSignIn} />
           </View>
         )}
 
@@ -131,9 +174,18 @@ export function LeaderboardScreen() {
           ))}
         </View>
 
+        {RESET_NOTE[window] && (
+          <View style={styles.resetNote}>
+            <Ionicons name="information-circle-outline" size={13} color={colors.textTertiary} />
+            <Text style={styles.resetNoteText}>{RESET_NOTE[window]}</Text>
+          </View>
+        )}
+
         {loading ? (
-          <View style={styles.center}>
-            <ActivityIndicator color={colors.accentGreen} />
+          <View>
+            {Array.from({ length: 8 }).map((_, i) => (
+              <RowSkeleton key={i} />
+            ))}
           </View>
         ) : entries.length === 0 ? (
           <View style={styles.center}>
@@ -145,13 +197,20 @@ export function LeaderboardScreen() {
             keyExtractor={(item) => item.userId}
             contentContainerStyle={{ paddingBottom: spacing.xl }}
             showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={handleRefresh}
+                tintColor={colors.accentGreen}
+              />
+            }
             renderItem={({ item }) => (
               <View style={[styles.row, item.userId === myUserId && styles.rowMe]}>
                 <Text style={styles.rank}>{String(item.rank).padStart(2, '0')}</Text>
                 <Avatar id={item.avatarId} size={32} />
                 <View style={styles.usernameRow}>
                   <Text style={styles.username} numberOfLines={1}>
-                    {item.username ?? 'Player'}
+                    {item.username ?? 'GUEST'}
                   </Text>
                   {item.isDev && <DevBadge size={12} />}
                 </View>
@@ -199,6 +258,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.5,
   },
+  signInBanner: {
+    marginBottom: spacing.md,
+  },
   tabRow: {
     flexDirection: 'row',
     borderWidth: 1,
@@ -228,6 +290,16 @@ const styles = StyleSheet.create({
   },
   tabTextActive: {
     color: colors.accentGreen,
+  },
+  resetNote: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    marginBottom: spacing.sm,
+  },
+  resetNoteText: {
+    color: colors.textTertiary,
+    fontSize: 11,
   },
   center: {
     flex: 1,

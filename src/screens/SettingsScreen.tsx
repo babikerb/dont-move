@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import { Header } from '../components/Header';
 import { ListRow } from '../components/ListRow';
 import { isHapticsEnabled, isSoundEnabled, setHapticsEnabled, setSoundEnabled } from '../lib/settings';
+import { isAnonymousSession } from '../lib/supabase';
 import { tapFeedback } from '../lib/feedback';
 import { colors, radius, spacing, type } from '../theme/colors';
 
@@ -13,6 +15,19 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Settings'>;
 export function SettingsScreen({ navigation }: Props) {
   const [soundOn, setSoundOn] = useState(isSoundEnabled());
   const [hapticsOn, setHapticsOn] = useState(isHapticsEnabled());
+  const [isAnonymous, setIsAnonymous] = useState(true);
+
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+      isAnonymousSession().then((anon) => {
+        if (!cancelled) setIsAnonymous(anon);
+      });
+      return () => {
+        cancelled = true;
+      };
+    }, [])
+  );
 
   const handleToggleSound = (value: boolean) => {
     setSoundOn(value);
@@ -32,6 +47,11 @@ export function SettingsScreen({ navigation }: Props) {
   const handleStub = (label: string) => {
     tapFeedback();
     Alert.alert(label, 'Coming soon.');
+  };
+
+  const handleAccount = () => {
+    tapFeedback();
+    navigation.navigate('Account');
   };
 
   return (
@@ -70,10 +90,10 @@ export function SettingsScreen({ navigation }: Props) {
         <View style={styles.section}>
           <ListRow label="PRIVACY" onPress={() => handleStub('Privacy')} />
           <ListRow
-            label="SIGN IN"
+            label={isAnonymous ? 'SIGN IN' : 'ACCOUNT'}
             border={false}
-            onPress={() => handleStub('Sign In')}
-            accessibilityLabel="Sign in or manage account"
+            onPress={handleAccount}
+            accessibilityLabel="Account"
           />
         </View>
 

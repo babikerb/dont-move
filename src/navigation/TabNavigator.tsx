@@ -22,7 +22,10 @@ export type HomeScreenProps = CompositeScreenProps<
   BottomTabScreenProps<TabParamList, 'Home'>,
   NativeStackScreenProps<RootStackParamList>
 >;
-export type LeaderboardScreenProps = BottomTabScreenProps<TabParamList, 'Leaderboard'>;
+export type LeaderboardScreenProps = CompositeScreenProps<
+  BottomTabScreenProps<TabParamList, 'Leaderboard'>,
+  NativeStackScreenProps<RootStackParamList>
+>;
 export type ProfileScreenProps = CompositeScreenProps<
   BottomTabScreenProps<TabParamList, 'Profile'>,
   NativeStackScreenProps<RootStackParamList>
@@ -37,7 +40,7 @@ const ICONS: Record<'Home' | 'Leaderboard', keyof typeof Ionicons.glyphMap> = {
 
 const LABELS: Record<keyof TabParamList, string> = {
   Home: 'HOME',
-  Leaderboard: 'RANK',
+  Leaderboard: 'LEADERBOARD',
   Profile: 'PROFILE',
 };
 

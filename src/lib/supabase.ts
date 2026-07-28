@@ -26,16 +26,33 @@ if (Platform.OS !== 'web') {
   });
 }
 
-// Called once at app launch. Every player gets a session immediately and
-// invisibly (CLAUDE.md: no login prompts during gameplay) - anonymous users
-// use the same `authenticated` Postgres role as real accounts, so RLS and
-// run submission work identically either way.
-export async function ensureSession(): Promise<void> {
+// No account is created until the player explicitly signs in - guest play
+// is local-only (AsyncStorage), no Supabase user, nothing synced. Every
+// helper below treats "no session" the same as "guest": reads return
+// null/empty, writes no-op, all without creating anything server-side.
+export async function isAnonymousSession(): Promise<boolean> {
   const { data } = await supabase.auth.getSession();
-  if (data.session) return;
+  return data.session?.user.is_anonymous ?? true;
+}
 
-  const { error } = await supabase.auth.signInAnonymously();
-  if (error) {
-    console.warn('Anonymous sign-in failed, continuing offline:', error.message);
-  }
+export interface AccountInfo {
+  isAnonymous: boolean;
+  email: string | null;
+  provider: string | null;
+}
+
+export async function fetchAccountInfo(): Promise<AccountInfo> {
+  const { data } = await supabase.auth.getSession();
+  const user = data.session?.user;
+  return {
+    isAnonymous: user?.is_anonymous ?? true,
+    email: user?.email ?? null,
+    provider: (user?.app_metadata?.provider as string | undefined) ?? null,
+  };
+}
+
+// Just ends the session - no replacement account gets created. The app
+// falls back to local-only guest state, same as before ever signing in.
+export async function signOutToGuest(): Promise<void> {
+  await supabase.auth.signOut();
 }

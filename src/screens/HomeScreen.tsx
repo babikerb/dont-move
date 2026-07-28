@@ -1,22 +1,33 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { HomeScreenProps } from '../navigation/TabNavigator';
 import { Button } from '../components/Button';
-import { getBestScore } from '../lib/storage';
+import { SignInBanner } from '../components/SignInBanner';
+import { getBestScore, reconcileBestScore } from '../lib/storage';
+import { useMyStats } from '../lib/statsQuery';
+import { isAnonymousSession } from '../lib/supabase';
 import { tapFeedback } from '../lib/feedback';
 import { colors, fontFamily, spacing, type } from '../theme/colors';
 
 export function HomeScreen({ navigation }: HomeScreenProps) {
   const insets = useSafeAreaInsets();
   const [bestScore, setBestScore] = useState<number | null>(null);
+  const [isGuest, setIsGuest] = useState(true);
+  // Home is a persistent tab screen, so this hook stays mounted and
+  // reactively refetches whenever ['myStats'] is invalidated elsewhere
+  // (e.g. right after signing in) - no need to wait for the player to
+  // revisit this tab.
+  const { data: stats } = useMyStats();
 
   useFocusEffect(
     useCallback(() => {
       let cancelled = false;
-      getBestScore().then((score) => {
-        if (!cancelled) setBestScore(score);
+      Promise.all([getBestScore(), isAnonymousSession()]).then(([score, anon]) => {
+        if (cancelled) return;
+        setBestScore(score);
+        setIsGuest(anon);
       });
       return () => {
         cancelled = true;
@@ -24,9 +35,19 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
     }, [])
   );
 
+  useEffect(() => {
+    if (stats === undefined) return;
+    reconcileBestScore(stats?.bestScore ?? null).then(setBestScore);
+  }, [stats]);
+
   const handlePlay = () => {
     tapFeedback();
     navigation.navigate('Play');
+  };
+
+  const handleSignIn = () => {
+    tapFeedback();
+    navigation.navigate('Account');
   };
 
   return (
@@ -44,7 +65,12 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
         )}
       </View>
 
-      <Button label="Play" onPress={handlePlay} />
+      <View style={styles.bottom}>
+        {isGuest && (
+          <SignInBanner message="Sign in to save your progress." onPress={handleSignIn} />
+        )}
+        <Button label="Play" onPress={handlePlay} />
+      </View>
     </View>
   );
 }
@@ -85,5 +111,8 @@ const styles = StyleSheet.create({
     fontSize: type.heading,
     fontWeight: '600',
     letterSpacing: 1,
+  },
+  bottom: {
+    gap: spacing.sm,
   },
 });
