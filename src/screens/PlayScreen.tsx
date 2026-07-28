@@ -8,6 +8,7 @@ import { TRACE_LENGTH, useMovementSession } from '../lib/sensors';
 import { computeScore, isTooStillToBeHandheld } from '../lib/scoring';
 import { saveRun } from '../lib/storage';
 import { submitRun } from '../lib/runSync';
+import { scheduleComeBackReminder } from '../lib/notifications';
 import { SeismographTrace } from '../components/SeismographTrace';
 import { hapticCountdownTick, hapticGo, hapticReleasedEarly } from '../lib/haptics';
 import { tapFeedback } from '../lib/feedback';
@@ -156,6 +157,10 @@ export function PlayScreen({ navigation }: Props) {
       queryClient.invalidateQueries({ queryKey: ['myStats'] });
       queryClient.invalidateQueries({ queryKey: ['myRuns'] });
     });
+
+    // Pushes the "come back" local reminder another 24h out from now,
+    // rather than leaving whatever was scheduled at launch/last run.
+    scheduleComeBackReminder();
 
     navigation.replace('Results', {
       score,

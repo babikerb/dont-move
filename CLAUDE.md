@@ -356,24 +356,6 @@ Only the user's highest score counts.
 
 ---
 
-# Daily Challenge
-
-Every day, all players receive the same challenge.
-
-Examples:
-
-- Longer duration
-- Higher sensitivity
-- Lower movement tolerance
-
-Everyone competes under identical rules.
-
-Separate leaderboard.
-
-Daily streak.
-
----
-
 # Accounts
 
 Anonymous account by default.
@@ -394,10 +376,11 @@ Used sparingly.
 Examples:
 
 - Someone beat your score.
-- New daily challenge.
-- You lost your leaderboard position.
+- Your leaderboard position is about to reset (Today/Week window closing soon) - one last chance to climb before it does.
+- The leaderboard just reset - a fresh board, a fresh chance to be #1.
+- A gentle reminder to come back and play, for a player who hasn't opened the app in a while.
 
-Never spam users.
+Never spam users. Notification permission is requested once, immediately at first launch (rather than contextually later), so it's resolved before it would otherwise have to interrupt gameplay.
 
 ---
 
@@ -467,13 +450,6 @@ Nothing else.
 - duration
 - movement_score
 - created_at
-
-## Daily Challenge
-
-- id
-- date
-- rules
-- leaderboard
 
 ---
 

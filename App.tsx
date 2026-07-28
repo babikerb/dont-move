@@ -12,6 +12,7 @@ import {
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { loadSettings } from './src/lib/settings';
 import { configureAudio } from './src/lib/sound';
+import { requestNotificationPermissionOnLaunch } from './src/lib/notifications';
 import { colors } from './src/theme/colors';
 
 // Defaults matter here: without a staleTime, every mount (switching tabs,
@@ -42,6 +43,10 @@ export default function App() {
     configureAudio();
     // No account is created at launch - guest play stays fully local until
     // the player explicitly signs in (CLAUDE.md's First Run Experience).
+    // The notification permission prompt is the one deliberate exception to
+    // "nothing at launch": asked immediately so it's resolved before it'd
+    // otherwise interrupt gameplay later.
+    requestNotificationPermissionOnLaunch();
   }, []);
 
   if (!fontsLoaded) {

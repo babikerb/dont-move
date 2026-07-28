@@ -90,7 +90,7 @@ Exit criteria: percentiles and ranks reflect real global data, not the static ta
 
 ---
 
-## Phase 6: Account Management and Compliance
+## Phase 6: Account Management and Compliance (done)
 
 Goal: real accounts now exist (Phase 4 shipped Apple Sign In), so App Store/Play Store account requirements are live, not a someday problem.
 
@@ -104,7 +104,22 @@ Exit criteria: a signed-in user can fully delete their account and all associate
 
 ---
 
-## Phase 7: Store Readiness and Launch
+## Phase 7: Notifications (done)
+
+Goal: bring lapsed players back and give competitive players a reason to check in, without becoming spam.
+
+- Permission requested once, immediately at app launch (a deliberate exception to "nothing at launch" - resolved up front so it never has to interrupt gameplay later)
+- Local, on-device "come back" reminder (`expo-notifications` scheduled notification, no server round trip) fires 24h after a player's last run - rescheduled on every run so it always means "24h since you last played," not a stale one-shot. Works for guests too, not just signed-in accounts
+- "Someone just beat your score": scoped narrowly to only the reigning all-time #1 losing the top spot (an extension of the existing `broadcast_run_insert` trigger), not everyone a given run happens to edge out - broader than that gets noisy fast as the player base grows, and by construction can't spam the same person repeatedly (they stop being tracked the moment they're dethroned)
+- "Leaderboard resets soon" / "leaderboard just reset": a `pg_cron` job (`run_leaderboard_notifications`, every 15 minutes) checks America/Los_Angeles wall-clock boundaries and pushes the current Top 5 once each, for both the daily and weekly windows - deduped via a small state table so each fires exactly once per reset, not once per cron tick. Computed once across the whole board, not once per Global/Country scope, so being in the Top 5 both globally and in your country still only produces one push, not two
+- Push delivery goes straight from Postgres to Expo's Push API via `pg_net` (fire-and-forget, no Edge Function needed) - a new `push_tokens` table (RLS: a user can only ever see/write their own rows) holds each signed-in device's Expo push token, registered on sign-in and cleared on sign-out
+- Guests never sync runs at all (see Phase 4), so the beaten-score and reset pushes only ever target signed-in accounts by construction - there's no token to look up for a guest regardless
+
+Exit criteria: a lapsed player gets pulled back in, and a competitive player gets pulled back to defend their spot, without either ever feeling spammed.
+
+---
+
+## Phase 8: Store Readiness and Launch
 
 Goal: ship it.
 
@@ -120,6 +135,6 @@ Exit criteria: success metrics from CLAUDE.md are measurable in production (time
 
 ## Deliberately Deferred (per CLAUDE.md's Future Features)
 
-Replay visualization, verified competition mode, seasonal rankings, teams, tournament brackets, creator leaderboards, and an Apple Watch companion. All of these build on the Phase 1 seismograph trace and the Phase 4/5 backend, and are revisited only after Phase 7 ships.
+Replay visualization, verified competition mode, seasonal rankings, teams, tournament brackets, creator leaderboards, and an Apple Watch companion. All of these build on the Phase 1 seismograph trace and the Phase 4/5 backend, and are revisited only after Phase 8 ships.
 
-Daily Challenge and streak/retention notifications were dropped from the roadmap entirely, not deferred - not planned.
+Daily Challenge itself (a rotating rules variant with its own separate leaderboard and streak) was dropped from the roadmap entirely, not deferred - not planned. The retention notifications originally scoped to it were kept and shipped in Phase 7, just detached from the daily-challenge concept - they nudge on general inactivity and leaderboard resets instead.

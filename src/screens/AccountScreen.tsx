@@ -13,6 +13,7 @@ import { AccountInfo, deleteMyAccount, fetchAccountInfo, signOutToGuest } from '
 import { isAppleSignInAvailable, signInWithApple } from '../lib/appleAuth';
 import { getDeviceCountryCode } from '../lib/country';
 import { setMyCountryIfUnset } from '../lib/profile';
+import { clearMyPushTokens, registerPushToken } from '../lib/notifications';
 import { hapticPersonalBest } from '../lib/haptics';
 import { tapFeedback } from '../lib/feedback';
 import { colors, radius, spacing, type } from '../theme/colors';
@@ -39,10 +40,14 @@ export function AccountScreen({ navigation }: Props) {
 
       // Backfills country for accounts that signed in before this existed,
       // and is a no-op otherwise since setMyCountryIfUnset only writes when
-      // the column is still null.
+      // the column is still null. Same idea for the push token - registers
+      // it here too (not just right after sign-in below) so a device that
+      // granted notification permission as a guest, then signs in later,
+      // still ends up with a token on file.
       if (!acc.isAnonymous) {
         const code = getDeviceCountryCode();
         if (code) setMyCountryIfUnset(code);
+        registerPushToken();
       }
     });
   }, []);
@@ -93,6 +98,11 @@ export function AccountScreen({ navigation }: Props) {
         style: 'destructive',
         onPress: async () => {
           setBusy(true);
+          // Must run before signOutToGuest() - it deletes this device's
+          // token rows for the current account, which relies on an
+          // authenticated session (RLS) that no longer exists once signed
+          // out.
+          await clearMyPushTokens();
           await signOutToGuest();
           setBusy(false);
           invalidateEverything();

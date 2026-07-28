@@ -37,7 +37,14 @@
       "expo-asset",
       "expo-font",
       "expo-apple-authentication",
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#7A9B6A"
+        }
+      ]
     ],
     "extra": {
       "eas": {
