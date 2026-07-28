@@ -43,20 +43,22 @@ export function HomeScreen({ navigation }: Props) {
     <View style={styles.container}>
       <View style={styles.topRow}>
         <Pressable
+          style={({ pressed }) => [styles.chip, pressed && styles.chipPressed]}
           onPress={handleLeaderboard}
-          hitSlop={16}
+          hitSlop={8}
           accessibilityRole="button"
           accessibilityLabel="Leaderboard"
         >
-          <Text style={styles.iconLabel}>Leaderboard</Text>
+          <Text style={styles.chipText}>Leaderboard</Text>
         </Pressable>
         <Pressable
+          style={({ pressed }) => [styles.chip, pressed && styles.chipPressed]}
           onPress={handleSettings}
-          hitSlop={16}
+          hitSlop={8}
           accessibilityRole="button"
           accessibilityLabel="Settings"
         >
-          <Text style={styles.iconLabel}>Settings</Text>
+          <Text style={styles.chipText}>Settings</Text>
         </Pressable>
       </View>
 
@@ -103,8 +105,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  iconLabel: {
-    color: colors.textSecondary,
+  chip: {
+    backgroundColor: colors.surface,
+    borderRadius: 20,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm + 2,
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  chipPressed: {
+    opacity: 0.7,
+  },
+  chipText: {
+    color: colors.textPrimary,
     fontSize: 14,
     fontWeight: '600',
   },

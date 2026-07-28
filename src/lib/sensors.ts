@@ -13,12 +13,23 @@ const NOISE_EMA = 0.7;
 const LINEAR_WEIGHT = 40;
 const ROTATIONAL_WEIGHT = 25;
 
+// A phone lying flat on a table reads gravity almost entirely on its
+// screen-perpendicular axis (z), regardless of device, since that's just
+// physics. A phone actually held up to look at is tilted enough toward the
+// player's face that gravity spreads across x/y too. This ratio (|z| over
+// total gravity magnitude) is what catches "propped flat and just touching
+// the screen" runs that the press-and-hold requirement alone doesn't. It
+// does not catch every propping method (e.g. leaned upright against
+// something), only the flat-surface case.
+const FLATNESS_THRESHOLD = 0.9;
+
 export function useMovementSession() {
   const [trace, setTrace] = useState<number[]>([]);
 
   const framesRef = useRef<number[]>([]);
   const gravityRef = useRef({ x: 0, y: 0, z: 0 });
   const gravityInitializedRef = useRef(false);
+  const isFlatRef = useRef(false);
   const latestGyroRef = useRef({ x: 0, y: 0, z: 0 });
   const smoothedRef = useRef(0);
   const lastTraceUpdateRef = useRef(0);
@@ -29,6 +40,7 @@ export function useMovementSession() {
     framesRef.current = [];
     gravityRef.current = { x: 0, y: 0, z: 0 };
     gravityInitializedRef.current = false;
+    isFlatRef.current = false;
     latestGyroRef.current = { x: 0, y: 0, z: 0 };
     smoothedRef.current = 0;
     lastTraceUpdateRef.current = 0;
@@ -60,6 +72,9 @@ export function useMovementSession() {
         gravity.y = gravity.y * GRAVITY_EMA + a.y * (1 - GRAVITY_EMA);
         gravity.z = gravity.z * GRAVITY_EMA + a.z * (1 - GRAVITY_EMA);
       }
+
+      const gravityMagnitude = Math.sqrt(gravity.x ** 2 + gravity.y ** 2 + gravity.z ** 2) || 1;
+      isFlatRef.current = Math.abs(gravity.z) / gravityMagnitude > FLATNESS_THRESHOLD;
 
       const linearX = a.x - gravity.x;
       const linearY = a.y - gravity.y;
@@ -95,6 +110,7 @@ export function useMovementSession() {
   }, []);
 
   const getFrames = useCallback(() => framesRef.current, []);
+  const isFlat = useCallback(() => isFlatRef.current, []);
 
-  return { trace, start, stop, reset, getFrames };
+  return { trace, start, stop, reset, getFrames, isFlat };
 }

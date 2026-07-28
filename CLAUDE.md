@@ -81,7 +81,7 @@ Sensor noise should never dramatically affect results.
 
 The scoring algorithm should reward consistency rather than luck.
 
-A run only counts if the player is actively holding the phone. See **Starting a Run**: the press-and-hold requirement exists so the game can't be trivially beaten by propping the phone on a still surface.
+A run only counts if the player is actively holding the phone. See **Starting a Run**: the press-and-hold requirement exists so the game can't be trivially beaten by propping the phone on a still surface. Holding a finger on the screen while the phone itself rests flat on a table still bypasses the hold requirement, so a second check watches the phone's orientation: gravity read almost entirely on the screen-perpendicular axis means it is lying flat, not being held up to look at, and the run is rejected. This does not catch every propping method (a phone leaned upright against something still passes), only the flat-on-a-surface case.
 
 ---
 
@@ -145,6 +145,8 @@ Press **Play**.
 Press and hold the screen to begin. Keep holding through the countdown and the entire run. Letting go at any point cancels the run.
 
 This is the anti-propping measure: setting the phone down on a table or stand releases the touch, so a truly still run can only come from someone actively holding it. Without this, resting the phone on a flat surface would trivially produce a perfect score, which defeats the whole point of the game.
+
+Holding a finger on the screen while the phone itself rests flat on a table still bypasses this, so the app also rejects a run if the phone's orientation reads as lying flat rather than held up to look at. See **Fairness**.
 
 3-second countdown.
 

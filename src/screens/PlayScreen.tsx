@@ -3,10 +3,11 @@ import { Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-na
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import { TRACE_LENGTH, useMovementSession } from '../lib/sensors';
-import { computeScore } from '../lib/scoring';
+import { computeScore, isTooStillToBeHandheld } from '../lib/scoring';
 import { saveRun } from '../lib/storage';
 import { SeismographTrace } from '../components/SeismographTrace';
 import { hapticCountdownTick, hapticGo, hapticReleasedEarly } from '../lib/haptics';
+import { tapFeedback } from '../lib/feedback';
 import { playSound } from '../lib/sound';
 import { colors, spacing } from '../theme/colors';
 
@@ -17,6 +18,7 @@ const RUN_DURATION_SECONDS = 20;
 const STORED_TRACE_LENGTH = 60;
 
 type Phase = 'idle' | 'countdown' | 'running';
+type CancelReason = 'released' | 'flat' | 'tooStill' | null;
 
 function downsample(values: number[], targetLength: number): number[] {
   if (values.length <= targetLength) return values;
@@ -28,20 +30,23 @@ function downsample(values: number[], targetLength: number): number[] {
   return result;
 }
 
-// The player must keep a finger on the screen from the start of the
-// countdown through the end of the run. Letting go cancels it immediately.
-// This is the anti-propping measure: setting the phone down on a surface
-// necessarily releases the touch, so a truly still run can only come from
-// someone actively holding it. The tradeoff is that this interaction model
-// doesn't have a clean screen-reader equivalent yet (hold gestures don't map
-// to VoiceOver's double-tap-to-activate), which is a known gap for later.
+// Two independent anti-propping measures. First, the player must keep a
+// finger on the screen from the start of the countdown through the end of
+// the run, since letting go to set the phone down cancels it immediately.
+// Second, sensors.ts flags when the phone is lying flat (gravity almost
+// entirely on the screen-perpendicular axis), since that's true regardless
+// of whether a finger is still touching the glass. Together they close the
+// two easy exploits: walking away, and propping flat while still touching
+// the screen. Neither catches every possible propping method (e.g. leaned
+// upright against something), and the hold gesture itself doesn't have a
+// clean screen-reader equivalent yet, both known gaps for later.
 export function PlayScreen({ navigation }: Props) {
   const { width } = useWindowDimensions();
-  const { trace, start, stop, getFrames } = useMovementSession();
+  const { trace, start, stop, getFrames, isFlat } = useMovementSession();
   const [phase, setPhase] = useState<Phase>('idle');
   const [count, setCount] = useState(COUNT_START);
   const [secondsLeft, setSecondsLeft] = useState(RUN_DURATION_SECONDS);
-  const [releasedEarly, setReleasedEarly] = useState(false);
+  const [cancelReason, setCancelReason] = useState<CancelReason>(null);
 
   const heldRef = useRef(false);
   const finishedRef = useRef(false);
@@ -54,12 +59,15 @@ export function PlayScreen({ navigation }: Props) {
     setSecondsLeft(RUN_DURATION_SECONDS);
   }, []);
 
-  const cancelRun = useCallback(() => {
-    stop();
-    resetToIdle();
-    setReleasedEarly(true);
-    hapticReleasedEarly();
-  }, [stop, resetToIdle]);
+  const cancelRun = useCallback(
+    (reason: 'released' | 'flat' | 'tooStill') => {
+      stop();
+      resetToIdle();
+      setCancelReason(reason);
+      hapticReleasedEarly();
+    },
+    [stop, resetToIdle]
+  );
 
   useEffect(() => {
     if (phase !== 'countdown') return;
@@ -89,11 +97,22 @@ export function PlayScreen({ navigation }: Props) {
     start();
     const startedAt = Date.now();
     const interval = setInterval(() => {
+      if (finishedRef.current) return;
+
+      if (isFlat()) {
+        finishedRef.current = true;
+        heldRef.current = false;
+        clearInterval(interval);
+        stop();
+        cancelRun('flat');
+        return;
+      }
+
       const elapsedSeconds = (Date.now() - startedAt) / 1000;
       const remaining = Math.max(0, RUN_DURATION_SECONDS - elapsedSeconds);
       setSecondsLeft(Math.ceil(remaining));
 
-      if (remaining <= 0 && !finishedRef.current) {
+      if (remaining <= 0) {
         finishedRef.current = true;
         clearInterval(interval);
         stop();
@@ -110,6 +129,12 @@ export function PlayScreen({ navigation }: Props) {
   const finishRun = async () => {
     const frames = getFrames();
     const { score, movementScore } = computeScore(frames);
+
+    if (isTooStillToBeHandheld(movementScore)) {
+      cancelRun('tooStill');
+      return;
+    }
+
     const traceSnapshot = downsample(frames, STORED_TRACE_LENGTH);
 
     const { isPersonalBest, bestScore } = await saveRun({
@@ -131,7 +156,7 @@ export function PlayScreen({ navigation }: Props) {
   const handlePressIn = () => {
     if (phase !== 'idle') return;
     heldRef.current = true;
-    setReleasedEarly(false);
+    setCancelReason(null);
     setPhase('countdown');
   };
 
@@ -139,7 +164,12 @@ export function PlayScreen({ navigation }: Props) {
     if (finishedRef.current) return;
     if (!heldRef.current) return;
     heldRef.current = false;
-    cancelRun();
+    cancelRun('released');
+  };
+
+  const handleGoHome = () => {
+    tapFeedback();
+    navigation.goBack();
   };
 
   return (
@@ -152,9 +182,29 @@ export function PlayScreen({ navigation }: Props) {
       accessibilityHint="Keep holding until the run ends. Letting go cancels it."
     >
       {phase === 'idle' && (
+        <Pressable
+          style={({ pressed }) => [styles.homeButton, pressed && styles.homeButtonPressed]}
+          onPress={handleGoHome}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel="Home"
+        >
+          <Text style={styles.homeButtonText}>Home</Text>
+        </Pressable>
+      )}
+
+      {phase === 'idle' && (
         <View style={styles.center}>
           <Text style={styles.prompt}>Press and hold to begin</Text>
-          {releasedEarly && <Text style={styles.releasedText}>Let go too soon. Try again.</Text>}
+          {cancelReason === 'released' && (
+            <Text style={styles.releasedText}>Let go too soon. Try again.</Text>
+          )}
+          {cancelReason === 'flat' && (
+            <Text style={styles.releasedText}>Hold the phone up. Don't rest it on a surface.</Text>
+          )}
+          {cancelReason === 'tooStill' && (
+            <Text style={styles.releasedText}>That was too still to be handheld. Try again.</Text>
+          )}
         </View>
       )}
 
@@ -178,6 +228,25 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  homeButton: {
+    position: 'absolute',
+    top: spacing.xl,
+    left: spacing.lg,
+    backgroundColor: colors.surface,
+    borderRadius: 20,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm + 2,
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  homeButtonPressed: {
+    opacity: 0.7,
+  },
+  homeButtonText: {
+    color: colors.textPrimary,
+    fontSize: 14,
+    fontWeight: '600',
   },
   center: {
     alignItems: 'center',

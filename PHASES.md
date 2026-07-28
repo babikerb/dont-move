@@ -20,7 +20,7 @@ Goal: the entire 30-second game loop works, offline, with zero backend.
 
 - Navigation shell: Home, then Play (countdown and run combined into one screen, see below), then Results (React Navigation stack)
 - Home screen: logo, local Best Score, Play button, stub Leaderboard entry, real Settings entry
-- Press-and-hold to start: the player must keep a finger on the screen through the countdown and the entire run, or it cancels. This is the anti-propping measure described in CLAUDE.md's Starting a Run and Fairness sections, since setting the phone down on a surface would otherwise trivially produce a perfect score
+- Three layered anti-propping measures, described in CLAUDE.md's Starting a Run and Fairness sections: press-and-hold to start (the player must keep a finger on the screen through the countdown and the entire run, or it cancels, closing the "set it down and walk away" case), a phone-orientation check that rejects a run if the phone reads as lying flat rather than held up to look at (closing the "flat on a table while still touching the screen" case), and a movement floor that rejects a run whose overall movement is suspiciously below what a real hand's physiological tremor can achieve, regardless of the phone's angle (closing propping at any angle, such as leaned against another object)
 - 3-2-1 countdown with a haptic each second and a GO audio cue
 - 20-second run phase: large timer, live seismograph trace (Expo Sensors, smoothed, drawn with react-native-svg, fixed pixel spacing so it scrolls like a strip chart from the first sample)
 - Sensor pipeline: accelerometer and gyroscope sampling, gravity removal (snapped to the first reading to avoid a cold-start false spike), noise smoothing and filtering, combined movement signal

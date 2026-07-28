@@ -16,6 +16,21 @@ const SPIKE_THRESHOLD = 6;
 const SPIKE_MEAN_PENALTY_SCALE = 12;
 const SPIKE_PEAK_PENALTY_SCALE = 0.6;
 
+// A real hand, no matter how steady, still produces physiological tremor
+// that a rigid prop (table, laptop screen, wall) never will, regardless of
+// the angle it's propped at. Orientation checks (see sensors.ts's flatness
+// check) only catch specific angles; this catches any prop, at any angle,
+// by looking for movement suspiciously below what a real hold can achieve.
+// Calibrated against two genuine held runs that scored 93.80 and 94.76
+// (movementScore ~1.13 and ~0.95), so this floor sits well below real
+// performance but well above what an inert object should read. Still a
+// placeholder pending more real-device data, especially from propped runs.
+export const MIN_LIVENESS_MOVEMENT = 0.4;
+
+export function isTooStillToBeHandheld(movementScore: number): boolean {
+  return movementScore < MIN_LIVENESS_MOVEMENT;
+}
+
 export function computeScore(frames: number[]): ScoreResult {
   if (frames.length === 0) {
     return { score: 0, movementScore: 0 };
