@@ -7,8 +7,10 @@ import { Avatar } from '../components/Avatar';
 import { DevBadge } from '../components/DevBadge';
 import { Skeleton } from '../components/Skeleton';
 import { SignInBanner } from '../components/SignInBanner';
-import { LeaderboardWindow, MyRank } from '../lib/leaderboard';
+import { LeaderboardScope, LeaderboardWindow, MyRank } from '../lib/leaderboard';
 import { LEADERBOARD_QUERY_KEY, useLeaderboard } from '../lib/leaderboardQuery';
+import { useMyProfile } from '../lib/profileQuery';
+import { countryFlag } from '../lib/country';
 import { supabase } from '../lib/supabase';
 import { tapFeedback } from '../lib/feedback';
 import { colors, fontFamily, radius, spacing, type } from '../theme/colors';
@@ -18,6 +20,11 @@ const WINDOWS: { key: LeaderboardWindow; label: string }[] = [
   { key: 'today', label: 'Today' },
   { key: 'week', label: 'Week' },
   { key: 'all_time', label: 'All Time' },
+];
+
+const SCOPES: { key: LeaderboardScope; label: string }[] = [
+  { key: 'global', label: 'Global' },
+  { key: 'country', label: 'Country' },
 ];
 
 const RESET_NOTE: Partial<Record<LeaderboardWindow, string>> = {
@@ -39,14 +46,26 @@ function RowSkeleton() {
 export function LeaderboardScreen({ navigation }: LeaderboardScreenProps) {
   const queryClient = useQueryClient();
   const [window, setWindow] = useState<LeaderboardWindow>('today');
+  const [scope, setScope] = useState<LeaderboardScope>('global');
   const [beatBanner, setBeatBanner] = useState(false);
 
-  const { data, isPending, isFetching, refetch } = useLeaderboard(window);
+  const { data: profile } = useMyProfile();
+  const { data, isPending, isFetching, refetch } = useLeaderboard(window, scope);
   const entries = data?.entries ?? [];
   const myRank = data?.myRank ?? null;
   const myUserId = data?.myUserId ?? null;
   const isGuest = data?.isGuest ?? true;
   const loading = isPending;
+
+  // Country scope needs a country on the caller's own profile to filter
+  // against (see get_leaderboard's p_country_only) - a guest, or a
+  // signed-in account from before this existed whose country hasn't
+  // backfilled yet, has neither. Falls back to global rather than showing
+  // an empty/nonsensical result.
+  const countryAvailable = !isGuest && !!profile?.country;
+  useEffect(() => {
+    if (scope === 'country' && !countryAvailable) setScope('global');
+  }, [scope, countryAvailable]);
 
   const myRankRef = useRef<MyRank | null>(null);
   myRankRef.current = myRank;
@@ -100,6 +119,12 @@ export function LeaderboardScreen({ navigation }: LeaderboardScreenProps) {
     setWindow(w);
   };
 
+  const handleSelectScope = (s: LeaderboardScope) => {
+    if (s === 'country' && !countryAvailable) return;
+    tapFeedback();
+    setScope(s);
+  };
+
   const handleSignIn = () => {
     tapFeedback();
     navigation.navigate('Account');
@@ -123,6 +148,33 @@ export function LeaderboardScreen({ navigation }: LeaderboardScreenProps) {
             <SignInBanner message="Sign in to appear on the leaderboard." onPress={handleSignIn} />
           </View>
         )}
+
+        <View style={styles.scopeRow}>
+          {SCOPES.map((s) => {
+            const disabled = s.key === 'country' && !countryAvailable;
+            return (
+              <Pressable
+                key={s.key}
+                style={[
+                  styles.scopePill,
+                  scope === s.key && styles.scopePillActive,
+                  disabled && styles.scopePillDisabled,
+                ]}
+                onPress={() => handleSelectScope(s.key)}
+                disabled={disabled}
+                accessibilityRole="button"
+                accessibilityLabel={s.label}
+              >
+                {s.key === 'country' && profile?.country && (
+                  <Text style={styles.scopeFlag}>{countryFlag(profile.country)}</Text>
+                )}
+                <Text style={[styles.scopeText, scope === s.key && styles.scopeTextActive]}>
+                  {s.label.toUpperCase()}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
 
         <View style={styles.tabRow}>
           {WINDOWS.map((w, i) => (
@@ -179,6 +231,9 @@ export function LeaderboardScreen({ navigation }: LeaderboardScreenProps) {
                 <Text style={styles.rank}>{String(item.rank).padStart(2, '0')}</Text>
                 <Avatar id={item.avatarId} size={32} />
                 <View style={styles.usernameRow}>
+                  {scope === 'global' && item.country && (
+                    <Text style={styles.rowFlag}>{countryFlag(item.country)}</Text>
+                  )}
                   <Text style={styles.username} numberOfLines={1}>
                     {item.username ?? 'GUEST'}
                   </Text>
@@ -230,6 +285,39 @@ const styles = StyleSheet.create({
   },
   signInBanner: {
     marginBottom: spacing.md,
+  },
+  scopeRow: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+    marginBottom: spacing.sm,
+  },
+  scopePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.sm,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 5,
+  },
+  scopePillActive: {
+    borderColor: colors.accentTeal,
+  },
+  scopePillDisabled: {
+    opacity: 0.4,
+  },
+  scopeFlag: {
+    fontSize: 12,
+  },
+  scopeText: {
+    color: colors.textSecondary,
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  scopeTextActive: {
+    color: colors.accentTeal,
   },
   tabRow: {
     flexDirection: 'row',
@@ -304,6 +392,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
+  },
+  rowFlag: {
+    fontSize: 13,
   },
   username: {
     color: colors.textPrimary,

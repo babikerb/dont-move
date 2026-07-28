@@ -74,13 +74,15 @@ Exit criteria: signing in mid-session migrates all local history with nothing lo
 
 ---
 
-## Phase 5: Leaderboards and Real Percentiles
+## Phase 5: Leaderboards and Real Percentiles (done)
 
 Goal: turn scores into social competition.
 
-- Leaderboard screen: Global, Country, Today, This Week, and All Time tabs
+- Leaderboard screen: Global/Country scope toggle x Today/This Week/All Time window tabs
+- Country is read from the device's OS locale region (`expo-localization`), not GPS or IP lookup - no permission prompt, costs the user nothing. Set once on first sign-in and never overwritten afterward (so a later trip abroad doesn't silently relabel someone's leaderboard country); backfilled automatically for accounts that signed in before this existed
+- Country scope is only offered once a signed-in user's country is actually set - falls back to Global otherwise (covers guests and not-yet-backfilled accounts) rather than showing an empty or nonsensical result. Guarded server-side too, not just client-side
 - Only highest score per user counts
-- Replace estimated percentiles with live percentiles computed from real Supabase data
+- Replace estimated percentiles with live percentiles computed from real Supabase data - gated on a minimum sample size (currently 25 other players) so a near-empty player base doesn't produce nonsense results like "Top 0%"; falls back to the static estimate below that threshold
 - Supabase Realtime for live leaderboard movement where it adds value (for example, "someone just beat you")
 - Friend challenges deliberately dropped: leaderboards stay read-only, and the Share Card's "Can you beat me?" flow already covers "beat a friend" without a friend graph, requests, or any user-to-user interaction to build or moderate
 
@@ -102,20 +104,7 @@ Exit criteria: a signed-in user can fully delete their account and all associate
 
 ---
 
-## Phase 7: Daily Challenge and Retention
-
-Goal: give players a reason to come back daily without violating "no gimmicks."
-
-- Daily challenge generator (rotates duration, sensitivity, and tolerance per CLAUDE.md)
-- Separate daily leaderboard and streak tracking
-- Sparse, meaningful notifications only: friend beat your score, new daily challenge, lost leaderboard position
-- Notification permission requested contextually, never at first launch
-
-Exit criteria: daily challenge and notifications increase day-two retention without adding friction to the core loop.
-
----
-
-## Phase 8: Store Readiness and Launch
+## Phase 7: Store Readiness and Launch
 
 Goal: ship it.
 
@@ -131,4 +120,6 @@ Exit criteria: success metrics from CLAUDE.md are measurable in production (time
 
 ## Deliberately Deferred (per CLAUDE.md's Future Features)
 
-Replay visualization, verified competition mode, seasonal rankings, teams, tournament brackets, creator leaderboards, and an Apple Watch companion. All of these build on the Phase 1 seismograph trace and the Phase 4/5 backend, and are revisited only after Phase 8 ships.
+Replay visualization, verified competition mode, seasonal rankings, teams, tournament brackets, creator leaderboards, and an Apple Watch companion. All of these build on the Phase 1 seismograph trace and the Phase 4/5 backend, and are revisited only after Phase 7 ships.
+
+Daily Challenge and streak/retention notifications were dropped from the roadmap entirely, not deferred - not planned.

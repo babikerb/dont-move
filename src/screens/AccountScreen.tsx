@@ -11,6 +11,8 @@ import { ListRow } from '../components/ListRow';
 import { GoogleIcon } from '../components/GoogleIcon';
 import { AccountInfo, deleteMyAccount, fetchAccountInfo, signOutToGuest } from '../lib/supabase';
 import { isAppleSignInAvailable, signInWithApple } from '../lib/appleAuth';
+import { getDeviceCountryCode } from '../lib/country';
+import { setMyCountryIfUnset } from '../lib/profile';
 import { hapticPersonalBest } from '../lib/haptics';
 import { tapFeedback } from '../lib/feedback';
 import { colors, radius, spacing, type } from '../theme/colors';
@@ -34,6 +36,14 @@ export function AccountScreen({ navigation }: Props) {
     Promise.all([fetchAccountInfo(), isAppleSignInAvailable()]).then(([acc, apple]) => {
       setAccount(acc);
       setAppleAvailable(apple);
+
+      // Backfills country for accounts that signed in before this existed,
+      // and is a no-op otherwise since setMyCountryIfUnset only writes when
+      // the column is still null.
+      if (!acc.isAnonymous) {
+        const code = getDeviceCountryCode();
+        if (code) setMyCountryIfUnset(code);
+      }
     });
   }, []);
 

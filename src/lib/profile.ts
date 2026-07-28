@@ -7,6 +7,7 @@ export interface Profile {
   avatarId: string;
   unlockedAvatarIds: string[];
   isDev: boolean;
+  country: string | null;
 }
 
 async function getMyUserId(): Promise<string | null> {
@@ -20,7 +21,7 @@ export async function fetchMyProfile(): Promise<Profile | null> {
 
   const { data, error } = await supabase
     .from('users')
-    .select('id, username, avatar_id, unlocked_avatar_ids, is_dev')
+    .select('id, username, avatar_id, unlocked_avatar_ids, is_dev, country')
     .eq('id', userId)
     .single();
 
@@ -31,6 +32,7 @@ export async function fetchMyProfile(): Promise<Profile | null> {
     avatarId: data.avatar_id,
     unlockedAvatarIds: data.unlocked_avatar_ids ?? [],
     isDev: data.is_dev ?? false,
+    country: data.country,
   };
 }
 
@@ -40,6 +42,15 @@ export async function updateMyAvatar(avatarId: string): Promise<boolean> {
 
   const { error } = await supabase.from('users').update({ avatar_id: avatarId }).eq('id', userId);
   return !error;
+}
+
+// Set once, right after sign-in - never overwritten afterward, so a later
+// trip abroad doesn't silently relabel someone's leaderboard country.
+export async function setMyCountryIfUnset(countryCode: string): Promise<void> {
+  const userId = await getMyUserId();
+  if (!userId) return;
+
+  await supabase.from('users').update({ country: countryCode }).eq('id', userId).is('country', null);
 }
 
 export type RedeemResult = { ok: true; avatarId: string } | { ok: false };

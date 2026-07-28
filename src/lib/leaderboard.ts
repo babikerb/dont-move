@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 
 export type LeaderboardWindow = 'today' | 'week' | 'all_time';
+export type LeaderboardScope = 'global' | 'country';
 
 export interface LeaderboardEntry {
   rank: number;
@@ -10,6 +11,7 @@ export interface LeaderboardEntry {
   isDev: boolean;
   score: number;
   createdAt: string;
+  country: string | null;
 }
 
 export interface MyRank {
@@ -31,11 +33,13 @@ export async function fetchScorePercentile(score: number): Promise<number | null
 
 export async function fetchLeaderboard(
   window: LeaderboardWindow,
+  scope: LeaderboardScope = 'global',
   limit = 50
 ): Promise<LeaderboardEntry[]> {
   const { data, error } = await supabase.rpc('get_leaderboard', {
     p_window: window,
     p_limit: limit,
+    p_country_only: scope === 'country',
   });
   if (error || !data) return [];
 
@@ -47,11 +51,18 @@ export async function fetchLeaderboard(
     isDev: row.is_dev ?? false,
     score: Number(row.score),
     createdAt: row.created_at,
+    country: row.country,
   }));
 }
 
-export async function fetchMyRank(window: LeaderboardWindow): Promise<MyRank | null> {
-  const { data, error } = await supabase.rpc('get_my_leaderboard_rank', { p_window: window });
+export async function fetchMyRank(
+  window: LeaderboardWindow,
+  scope: LeaderboardScope = 'global'
+): Promise<MyRank | null> {
+  const { data, error } = await supabase.rpc('get_my_leaderboard_rank', {
+    p_window: window,
+    p_country_only: scope === 'country',
+  });
   if (error || !data || data.length === 0) return null;
 
   const row = data[0];
