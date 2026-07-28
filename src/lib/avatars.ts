@@ -61,6 +61,13 @@ export const SECRET_AVATARS: AvatarPreset[] = [
       mouth: ['tongue'],
       clothing: ['shirtCrewNeck'],
       clothesColor: ['ffffff'],
+      // A bald head has no hair to absorb the extra height, so the bare
+      // skull is tall enough to hit the circular mask's edge (flattening
+      // the top of the circle). scale clears it; translateY nudges the
+      // whole thing back down so the shoulders still sit flush against the
+      // bottom instead of leaving a gap.
+      scale: 92,
+      translateY: 4,
     },
   },
 ];
