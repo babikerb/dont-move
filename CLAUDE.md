@@ -34,16 +34,16 @@ Everything else is secondary.
 
 Don't Move has one visual signature that appears everywhere movement is shown: a live trace line, styled after a seismograph / EKG monitor.
 
-- **During the run**, the "minimal movement indicator" required in the Gameplay spec IS this trace — a thin animated line drawn in the accent green, scrolling left to right. Perfect stillness renders as a flat line. Any movement produces a spike proportional to its severity.
-- **Perfect stillness looks like a flatline.** This is intentional. It borrows the emotional weight of a medical monitor — calm, clinical, slightly tense — and reframes "I didn't move" as "I flatlined," which is both a legitimate flex and a joke worth sharing.
+- **During the run**, the "minimal movement indicator" required in the Gameplay spec IS this trace: a thin animated line drawn in the accent green, scrolling left to right. Perfect stillness renders as a flat line. Any movement produces a spike proportional to its severity.
+- **Perfect stillness looks like a flatline.** This is intentional. It borrows the emotional weight of a medical monitor (calm, clinical, slightly tense) and reframes "I didn't move" as "I flatlined," which is both a legitimate flex and a joke worth sharing.
 - **On the Results screen**, a condensed, static version of the player's trace can appear as a secondary element beneath the score (never competing with it for visual weight).
-- **On the Share Card**, the trace is the second-most prominent element after the score itself — it's what makes the card recognizable as *this specific run* rather than a generic score screenshot, and what makes it recognizable as *Don't Move* at a glance even with no logo visible.
-- This motif is the natural foundation for the future "Movement graph" and "Replay visualization" features — those are a zoomed-in, scrubbable version of the same trace, not a new concept.
+- **On the Share Card**, the trace is the second-most prominent element after the score itself. It's what makes the card recognizable as *this specific run* rather than a generic score screenshot, and what makes it recognizable as *Don't Move* at a glance even with no logo visible.
+- This motif is the natural foundation for the future "Movement graph" and "Replay visualization" features. Those are a zoomed-in, scrubbable version of the same trace, not a new concept.
 
 Rendering notes:
 - Single stroke, accent green (`#34C759`), subtle glow, no fill.
-- No axis labels, gridlines, or units — this is a feeling, not a chart.
-- Motion should be smooth (interpolated/eased), never jittery from raw sensor noise — the trace shows the *scored* movement signal, post-smoothing, not raw accelerometer output.
+- No axis labels, gridlines, or units. This is a feeling, not a chart.
+- Motion should be smooth (interpolated and eased), never jittery from raw sensor noise. The trace shows the *scored* movement signal, after smoothing, not raw accelerometer output.
 
 ---
 
@@ -159,7 +159,7 @@ Duration:
 Display:
 
 - Large countdown timer
-- Minimal movement indicator — rendered as the live seismograph trace (see **Visual Theme: The Human Seismograph** above)
+- Minimal movement indicator, rendered as the live seismograph trace (see **Visual Theme: The Human Seismograph** above)
 
 Do **not** show the score while the run is active.
 
@@ -186,7 +186,7 @@ Movement score should combine rotational and linear movement.
 
 Large sudden movements should have a significantly larger penalty than tiny corrections.
 
-The smoothed, post-processing movement signal is also what drives the seismograph trace — the trace and the score must always tell the same story.
+The smoothed, post-processing movement signal is also what drives the seismograph trace. The trace and the score must always tell the same story.
 
 ---
 
@@ -297,7 +297,7 @@ Can you beat me?
 [QR CODE]
 ```
 
-The trace line is the second-most prominent element after the score — flat sections read as "flatlined," a spike reads as the moment they slipped. It's what makes the card recognizable as a Don't Move result even at a glance, with no logo visible.
+The trace line is the second-most prominent element after the score. Flat sections read as "flatlined," a spike reads as the moment they slipped. It's what makes the card recognizable as a Don't Move result even at a glance, with no logo visible.
 
 Optional additions:
 
@@ -485,7 +485,7 @@ Accent color:
 
 `#34C759`
 
-The seismograph trace (see **Visual Theme**) is the app's core recurring visual motif — it should appear during the run, on the results screen, and on the share card, always rendered the same way.
+The seismograph trace (see **Visual Theme**) is the app's core recurring visual motif. It should appear during the run, on the results screen, and on the share card, always rendered the same way.
 
 Use subtle blur where appropriate.
 
