@@ -289,11 +289,9 @@ Percentiles should always encourage another run.
 
 Generate automatically after every run.
 
-Layout:
+Layout deliberately mirrors the Results screen rather than being a separate design, so it feels like a direct extension of what the player just saw, not a different artifact:
 
 ```
-DON'T MOVE
-
 98.42
 
 TOP 2%
@@ -301,11 +299,9 @@ TOP 2%
 _____/\____________   (your trace)
 
 Can you beat me?
-
-[QR CODE]
 ```
 
-The trace line is the second-most prominent element after the score. Flat sections read as "flatlined," a spike reads as the moment they slipped. It's what makes the card recognizable as a Don't Move result even at a glance, with no logo visible.
+No logo, no QR code. The trace line is the second-most prominent element after the score. Flat sections read as "flatlined," a spike reads as the moment they slipped. It's what makes the card recognizable as a Don't Move result even at a glance, with no logo needed.
 
 Optional additions:
 
