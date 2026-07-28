@@ -1,20 +1,15 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
+import { useQueryClient } from '@tanstack/react-query';
 import { Header } from '../components/Header';
 import { Avatar } from '../components/Avatar';
 import { DevBadge } from '../components/DevBadge';
 import { Skeleton } from '../components/Skeleton';
 import { SignInBanner } from '../components/SignInBanner';
-import {
-  fetchLeaderboard,
-  fetchMyRank,
-  LeaderboardEntry,
-  LeaderboardWindow,
-  MyRank,
-} from '../lib/leaderboard';
-import { supabase, isAnonymousSession } from '../lib/supabase';
+import { LeaderboardWindow, MyRank } from '../lib/leaderboard';
+import { LEADERBOARD_QUERY_KEY, useLeaderboard } from '../lib/leaderboardQuery';
+import { supabase } from '../lib/supabase';
 import { tapFeedback } from '../lib/feedback';
 import { colors, fontFamily, radius, spacing, type } from '../theme/colors';
 import type { LeaderboardScreenProps } from '../navigation/TabNavigator';
@@ -42,50 +37,29 @@ function RowSkeleton() {
 }
 
 export function LeaderboardScreen({ navigation }: LeaderboardScreenProps) {
+  const queryClient = useQueryClient();
   const [window, setWindow] = useState<LeaderboardWindow>('today');
-  const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
-  const [myRank, setMyRank] = useState<MyRank | null>(null);
-  const [myUserId, setMyUserId] = useState<string | null>(null);
-  const [isGuest, setIsGuest] = useState(true);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [beatBanner, setBeatBanner] = useState(false);
+
+  const { data, isPending, isFetching, refetch } = useLeaderboard(window);
+  const entries = data?.entries ?? [];
+  const myRank = data?.myRank ?? null;
+  const myUserId = data?.myUserId ?? null;
+  const isGuest = data?.isGuest ?? true;
+  const loading = isPending;
+
   const myRankRef = useRef<MyRank | null>(null);
   myRankRef.current = myRank;
-
-  const load = useCallback(async (w: LeaderboardWindow, isRefresh = false) => {
-    if (isRefresh) setRefreshing(true);
-    else setLoading(true);
-
-    const [{ data }, list, rank, guest] = await Promise.all([
-      supabase.auth.getSession(),
-      fetchLeaderboard(w),
-      fetchMyRank(w),
-      isAnonymousSession(),
-    ]);
-    setMyUserId(data.session?.user.id ?? null);
-    setEntries(list);
-    setMyRank(rank);
-    setIsGuest(guest);
-
-    if (isRefresh) setRefreshing(false);
-    else setLoading(false);
-  }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      load(window);
-      // Only refresh on focus/window change, not every time `load` is recreated.
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [window])
-  );
 
   // Live leaderboard movement (CLAUDE.md Phase 5): a database trigger
   // broadcasts on every new run insert (see the `leaderboard` Realtime
   // topic), since Postgres Changes on public.runs would be filtered down to
   // only the subscriber's own rows by its RLS policy. The broadcast is just
-  // a "something changed" ping - we always refetch for the true ranked view
-  // rather than trust a client-reconstructed one.
+  // a "something changed" ping - invalidate rather than trust a
+  // client-reconstructed view. Invalidating the whole leaderboard key (not
+  // just the current window) keeps other cached windows correctly marked
+  // stale too, so switching tabs later doesn't show a fresher-than-reality
+  // cached result.
   useEffect(() => {
     let cancelled = false;
     let channel: ReturnType<typeof supabase.channel> | null = null;
@@ -95,7 +69,7 @@ export function LeaderboardScreen({ navigation }: LeaderboardScreenProps) {
       channel = supabase
         .channel('leaderboard', { config: { private: true } })
         .on('broadcast', { event: 'INSERT' }, (message: any) => {
-          load(window);
+          queryClient.invalidateQueries({ queryKey: [LEADERBOARD_QUERY_KEY] });
 
           const newScore = Number(message?.payload?.record?.score);
           if (
@@ -113,7 +87,7 @@ export function LeaderboardScreen({ navigation }: LeaderboardScreenProps) {
       cancelled = true;
       if (channel) supabase.removeChannel(channel);
     };
-  }, [window, load]);
+  }, [queryClient]);
 
   useEffect(() => {
     if (!beatBanner) return;
@@ -124,10 +98,6 @@ export function LeaderboardScreen({ navigation }: LeaderboardScreenProps) {
   const handleSelectWindow = (w: LeaderboardWindow) => {
     tapFeedback();
     setWindow(w);
-  };
-
-  const handleRefresh = () => {
-    load(window, true);
   };
 
   const handleSignIn = () => {
@@ -199,8 +169,8 @@ export function LeaderboardScreen({ navigation }: LeaderboardScreenProps) {
             showsVerticalScrollIndicator={false}
             refreshControl={
               <RefreshControl
-                refreshing={refreshing}
-                onRefresh={handleRefresh}
+                refreshing={isFetching && !isPending}
+                onRefresh={refetch}
                 tintColor={colors.accentGreen}
               />
             }

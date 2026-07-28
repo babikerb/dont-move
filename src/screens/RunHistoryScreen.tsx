@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import { Header } from '../components/Header';
 import { Skeleton } from '../components/Skeleton';
-import { fetchMyRuns, RunHistoryEntry } from '../lib/runs';
+import { useMyRuns } from '../lib/runsQuery';
 import { tapFeedback } from '../lib/feedback';
 import { colors, fontFamily, spacing, type } from '../theme/colors';
 
@@ -28,17 +28,8 @@ function formatDateTime(iso: string): string {
 }
 
 export function RunHistoryScreen({ navigation }: Props) {
-  const [runs, setRuns] = useState<RunHistoryEntry[] | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetchMyRuns().then((list) => {
-      if (!cancelled) setRuns(list);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const { data, isPending } = useMyRuns();
+  const runs = data ?? [];
 
   const handleClose = () => {
     tapFeedback();
@@ -49,7 +40,7 @@ export function RunHistoryScreen({ navigation }: Props) {
     <View style={styles.container}>
       <Header title="Run History" action={{ label: 'Close', onPress: handleClose }} divider />
 
-      {runs === null ? (
+      {isPending ? (
         <View style={styles.list}>
           {Array.from({ length: 10 }).map((_, i) => (
             <RowSkeleton key={i} />

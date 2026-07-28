@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useQueryClient } from '@tanstack/react-query';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import { TRACE_LENGTH, useMovementSession } from '../lib/sensors';
@@ -44,6 +45,7 @@ function downsample(values: number[], targetLength: number): number[] {
 // equivalent, a known gap for later.
 export function PlayScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
   const { width } = useWindowDimensions();
   const { trace, start, stop, getFrames, isFlat } = useMovementSession();
   const [phase, setPhase] = useState<Phase>('idle');
@@ -147,7 +149,13 @@ export function PlayScreen({ navigation }: Props) {
       createdAt: new Date().toISOString(),
     });
 
-    submitRun({ score, movementScore, duration: RUN_DURATION_SECONDS });
+    submitRun({ score, movementScore, duration: RUN_DURATION_SECONDS }).then(() => {
+      // Leaderboard already updates itself via the Realtime broadcast
+      // trigger; these two aren't covered by that, so without this they'd
+      // show last run's numbers for up to a minute (the cache's staleTime).
+      queryClient.invalidateQueries({ queryKey: ['myStats'] });
+      queryClient.invalidateQueries({ queryKey: ['myRuns'] });
+    });
 
     navigation.replace('Results', {
       score,

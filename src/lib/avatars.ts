@@ -47,12 +47,26 @@ export const SECRET_AVATARS: AvatarPreset[] = [
     id: 'PurpleDurag',
     options: {
       // 'hat' renders as a floppy wide-brimmed hat, nothing like a durag.
-      // 'turban' sits fitted to the head with no brim - much closer, even
-      // though avataaars has no true durag (with its back knot/tail).
+      // 'hijab' drapes over the shoulders/chest, wrong silhouette entirely.
+      // 'turban' sits fitted to the head with no brim or drape - closest
+      // available, even though avataaars has no true durag (with its back
+      // knot/tail). Pinned face (open eyes, tongue out) and a plain tee
+      // instead of the seed's random hash.
       top: ['turban'],
       hatColor: ['6D28FF'],
       skinColor: ['3c1c0a'],
       facialHairProbability: 0,
+      eyes: ['default'],
+      eyebrows: ['defaultNatural'],
+      mouth: ['tongue'],
+      clothing: ['shirtCrewNeck'],
+      clothesColor: ['ffffff'],
+      // The turban is tall enough to reach the circular mask's edge at the
+      // default scale (visible as a flattened top instead of a smooth
+      // curve). A small scale-down specific to this preset clears it - kept
+      // per-avatar rather than global so every other (shorter) hairstyle
+      // still sits flush against the bottom of the circle.
+      scale: 95,
     },
   },
 ];

@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Alert, Platform, StyleSheet, Text, View } from 'react-native';
+import { Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useFocusEffect } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
@@ -8,11 +8,12 @@ import type { RootStackParamList } from '../navigation/RootNavigator';
 import { Header } from '../components/Header';
 import { Button } from '../components/Button';
 import { ListRow } from '../components/ListRow';
+import { GoogleIcon } from '../components/GoogleIcon';
 import { AccountInfo, fetchAccountInfo, signOutToGuest } from '../lib/supabase';
 import { isAppleSignInAvailable, signInWithApple } from '../lib/appleAuth';
 import { hapticPersonalBest } from '../lib/haptics';
 import { tapFeedback } from '../lib/feedback';
-import { colors, radius, spacing, type } from '../theme/colors';
+import { colors, radius, spacing } from '../theme/colors';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Account'>;
 
@@ -20,6 +21,8 @@ function formatProvider(provider: string | null): string {
   if (!provider || provider === 'anonymous') return 'GUEST';
   return provider.toUpperCase();
 }
+
+const BENEFITS = ['Appear on the leaderboard', 'Challenge friends', 'Sync progress across devices'];
 
 export function AccountScreen({ navigation }: Props) {
   const queryClient = useQueryClient();
@@ -96,19 +99,31 @@ export function AccountScreen({ navigation }: Props) {
       <View style={styles.body}>
         {!account ? null : account.isAnonymous ? (
           <View style={styles.signInBlock}>
-            <Text style={styles.prompt}>Sign in to save your progress across devices.</Text>
+            <View style={styles.section}>
+              {BENEFITS.map((benefit, i) => (
+                <ListRow key={benefit} label={benefit} border={i < BENEFITS.length - 1} />
+              ))}
+            </View>
 
             {appleAvailable && Platform.OS === 'ios' && (
               <AppleAuthentication.AppleAuthenticationButton
                 buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
-                buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE}
+                buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE_OUTLINE}
                 cornerRadius={radius.md}
                 style={styles.appleButton}
                 onPress={handleAppleSignIn}
               />
             )}
 
-            <Button label="Sign in with Google" onPress={handleGoogleSignIn} variant="secondary" />
+            <Pressable
+              style={({ pressed }) => [styles.googleButton, pressed && styles.googleButtonPressed]}
+              onPress={handleGoogleSignIn}
+              accessibilityRole="button"
+              accessibilityLabel="Sign in with Google"
+            >
+              <GoogleIcon size={18} />
+              <Text style={styles.googleButtonText}>Sign in with Google</Text>
+            </Pressable>
           </View>
         ) : (
           <View style={styles.accountBlock}>
@@ -138,14 +153,32 @@ const styles = StyleSheet.create({
   signInBlock: {
     gap: spacing.md,
   },
-  prompt: {
-    color: colors.textSecondary,
-    fontSize: type.body,
-    marginBottom: spacing.xs,
-  },
   appleButton: {
     width: '100%',
     height: 48,
+  },
+  // Matches Google's standard "neutral/light" branded button spec: white
+  // fill, #747775 border, #1F1F1F text - same reasoning as using Apple's
+  // official button component for the Apple button above.
+  googleButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    width: '100%',
+    height: 48,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#747775',
+    borderRadius: radius.md,
+  },
+  googleButtonPressed: {
+    opacity: 0.85,
+  },
+  googleButtonText: {
+    color: '#1F1F1F',
+    fontSize: 16,
+    fontWeight: '600',
   },
   accountBlock: {
     gap: spacing.xl,

@@ -14,7 +14,21 @@ import { loadSettings } from './src/lib/settings';
 import { configureAudio } from './src/lib/sound';
 import { colors } from './src/theme/colors';
 
-const queryClient = new QueryClient();
+// Defaults matter here: without a staleTime, every mount (switching tabs,
+// reopening a modal screen) refetches from Supabase even though profile/
+// stats/leaderboard data rarely changes moment-to-moment. A minute of
+// staleness is invisible to the player but cuts a large share of otherwise
+// redundant reads; anything that needs to be instantly fresh (after
+// sign-in/out, an avatar change, a new run) already calls
+// invalidateQueries explicitly rather than relying on this window to pass.
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60_000,
+      gcTime: 5 * 60_000,
+    },
+  },
+});
 
 export default function App() {
   const [fontsLoaded] = useFonts({
