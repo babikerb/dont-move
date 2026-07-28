@@ -8,7 +8,7 @@ interface Anchor {
 // extrapolated so the curve degrades gracefully outside the common range.
 // Replace with live percentiles from real player data in Phase 5.
 const ANCHORS: Anchor[] = [
-  { score: 0, top: 99.9 },
+  { score: 0, top: 99 },
   { score: 70, top: 99 },
   { score: 82, top: 90 },
   { score: 89.4, top: 47 },

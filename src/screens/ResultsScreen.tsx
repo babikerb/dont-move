@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import {
   Alert,
   Animated,
@@ -12,6 +12,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import { SeismographTrace } from '../components/SeismographTrace';
 import { formatPercentile } from '../lib/percentile';
+import { getResultMessage } from '../lib/resultMessages';
 import { hapticButton, hapticPersonalBest } from '../lib/haptics';
 import { playSound } from '../lib/sound';
 import { colors, spacing } from '../theme/colors';
@@ -22,6 +23,14 @@ export function ResultsScreen({ navigation, route }: Props) {
   const { score, trace, isPersonalBest } = route.params;
   const { width } = useWindowDimensions();
   const scoreScale = useRef(new Animated.Value(isPersonalBest ? 0.85 : 1)).current;
+
+  // Picked once per run so it doesn't change on re-render, and skipped for a
+  // personal best since the PERSONAL BEST banner already carries that moment.
+  const resultMessage = useMemo(
+    () => (isPersonalBest ? null : getResultMessage(score)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
 
   useEffect(() => {
     if (isPersonalBest) {
@@ -60,6 +69,7 @@ export function ResultsScreen({ navigation, route }: Props) {
           {score.toFixed(2)}
         </Animated.Text>
         <Text style={styles.percentile}>{formatPercentile(score)}</Text>
+        {resultMessage && <Text style={styles.resultMessage}>{resultMessage}</Text>}
 
         <View style={styles.traceWrapper}>
           <SeismographTrace values={trace} width={width - spacing.lg * 4} height={60} strokeWidth={1.5} />
@@ -108,6 +118,11 @@ const styles = StyleSheet.create({
     color: colors.accent,
     fontSize: 20,
     fontWeight: '600',
+  },
+  resultMessage: {
+    color: colors.textSecondary,
+    fontSize: 15,
+    fontWeight: '500',
   },
   traceWrapper: {
     marginTop: spacing.lg,

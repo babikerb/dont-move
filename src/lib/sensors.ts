@@ -3,7 +3,7 @@ import { Accelerometer, Gyroscope } from 'expo-sensors';
 
 const SAMPLE_INTERVAL_MS = 16; // ~60Hz, the highest frequency that stays stable across Expo-supported devices
 const TRACE_UPDATE_INTERVAL_MS = 90;
-const TRACE_LENGTH = 140;
+export const TRACE_LENGTH = 140;
 
 // Accelerometer reports in g, gyroscope in rad/s, so these scale both into one
 // comparable movement range. Placeholder values, still need on-device
@@ -18,6 +18,7 @@ export function useMovementSession() {
 
   const framesRef = useRef<number[]>([]);
   const gravityRef = useRef({ x: 0, y: 0, z: 0 });
+  const gravityInitializedRef = useRef(false);
   const latestGyroRef = useRef({ x: 0, y: 0, z: 0 });
   const smoothedRef = useRef(0);
   const lastTraceUpdateRef = useRef(0);
@@ -27,6 +28,7 @@ export function useMovementSession() {
   const reset = useCallback(() => {
     framesRef.current = [];
     gravityRef.current = { x: 0, y: 0, z: 0 };
+    gravityInitializedRef.current = false;
     latestGyroRef.current = { x: 0, y: 0, z: 0 };
     smoothedRef.current = 0;
     lastTraceUpdateRef.current = 0;
@@ -44,9 +46,20 @@ export function useMovementSession() {
 
     accelSubRef.current = Accelerometer.addListener((a) => {
       const gravity = gravityRef.current;
-      gravity.x = gravity.x * GRAVITY_EMA + a.x * (1 - GRAVITY_EMA);
-      gravity.y = gravity.y * GRAVITY_EMA + a.y * (1 - GRAVITY_EMA);
-      gravity.z = gravity.z * GRAVITY_EMA + a.z * (1 - GRAVITY_EMA);
+
+      // Snap to the first real reading instead of starting from {0,0,0}.
+      // Otherwise gravity (about 1g) reads as a huge false "movement" spike
+      // for the first few samples, before the EMA below has time to catch up.
+      if (!gravityInitializedRef.current) {
+        gravity.x = a.x;
+        gravity.y = a.y;
+        gravity.z = a.z;
+        gravityInitializedRef.current = true;
+      } else {
+        gravity.x = gravity.x * GRAVITY_EMA + a.x * (1 - GRAVITY_EMA);
+        gravity.y = gravity.y * GRAVITY_EMA + a.y * (1 - GRAVITY_EMA);
+        gravity.z = gravity.z * GRAVITY_EMA + a.z * (1 - GRAVITY_EMA);
+      }
 
       const linearX = a.x - gravity.x;
       const linearY = a.y - gravity.y;

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
-import { useMovementSession } from '../lib/sensors';
+import { TRACE_LENGTH, useMovementSession } from '../lib/sensors';
 import { computeScore } from '../lib/scoring';
 import { saveRun } from '../lib/storage';
 import { SeismographTrace } from '../components/SeismographTrace';
@@ -79,7 +79,7 @@ export function RunScreen({ navigation }: Props) {
     <View style={styles.container}>
       <Text style={styles.timer}>{secondsLeft}</Text>
       <View style={styles.traceWrapper}>
-        <SeismographTrace values={trace} width={width - spacing.lg * 2} height={120} />
+        <SeismographTrace values={trace} width={width} height={120} capacity={TRACE_LENGTH} />
       </View>
     </View>
   );
@@ -100,6 +100,6 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   traceWrapper: {
-    paddingHorizontal: spacing.lg,
+    width: '100%',
   },
 });
