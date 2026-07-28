@@ -1,4 +1,5 @@
 import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from 'expo-audio';
+import { isSoundEnabled } from './settings';
 
 const soundAssets = {
   tick: require('../../assets/sounds/tick.wav'),
@@ -28,6 +29,7 @@ function getPlayer(name: SoundName): AudioPlayer {
 }
 
 export function playSound(name: SoundName): void {
+  if (!isSoundEnabled()) return;
   try {
     const player = getPlayer(name);
     player.seekTo(0);

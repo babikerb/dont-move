@@ -1,12 +1,28 @@
 import * as Haptics from 'expo-haptics';
+import { isHapticsEnabled } from './settings';
 
-export const hapticCountdownTick = () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+export function hapticCountdownTick() {
+  if (!isHapticsEnabled()) return;
+  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+}
 
-export const hapticGo = () => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+export function hapticGo() {
+  if (!isHapticsEnabled()) return;
+  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+}
 
-export const hapticButton = () => Haptics.selectionAsync();
+export function hapticButton() {
+  if (!isHapticsEnabled()) return;
+  Haptics.selectionAsync();
+}
 
 export async function hapticPersonalBest() {
+  if (!isHapticsEnabled()) return;
   await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+}
+
+export function hapticReleasedEarly() {
+  if (!isHapticsEnabled()) return;
+  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
 }

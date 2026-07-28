@@ -14,34 +14,35 @@ No code is written as part of this document. Each phase should ship something th
 
 ---
 
-## Phase 1: Core Loop, Fully Local
+## Phase 1: Core Loop, Fully Local (done)
 
 Goal: the entire 30-second game loop works, offline, with zero backend.
 
-- Navigation shell: Home, then Countdown, then Run, then Results (React Navigation stack)
-- Home screen: logo, local Best Score, Play button, disabled stub Leaderboard and Settings entries
+- Navigation shell: Home, then Play (countdown and run combined into one screen, see below), then Results (React Navigation stack)
+- Home screen: logo, local Best Score, Play button, stub Leaderboard entry, real Settings entry
+- Press-and-hold to start: the player must keep a finger on the screen through the countdown and the entire run, or it cancels. This is the anti-propping measure described in CLAUDE.md's Starting a Run and Fairness sections, since setting the phone down on a surface would otherwise trivially produce a perfect score
 - 3-2-1 countdown with a haptic each second and a GO audio cue
-- 20-second run screen: large timer, live seismograph trace (Expo Sensors, smoothed, drawn with react-native-svg)
-- Sensor pipeline: accelerometer and gyroscope sampling, noise smoothing and filtering, combined movement signal
-- Scoring algorithm v1: produces the 0.00 to 100.00 curve described in CLAUDE.md (most players 82 to 94, tuned iteratively)
-- Results screen: large score, condensed static trace, estimated percentile (static distribution table), Personal Best detection, Play Again, Share (stub), and Home
-- Local persistence: best score and run history (AsyncStorage or SQLite)
+- 20-second run phase: large timer, live seismograph trace (Expo Sensors, smoothed, drawn with react-native-svg, fixed pixel spacing so it scrolls like a strip chart from the first sample)
+- Sensor pipeline: accelerometer and gyroscope sampling, gravity removal (snapped to the first reading to avoid a cold-start false spike), noise smoothing and filtering, combined movement signal
+- Scoring algorithm v1: produces the 0.00 to 100.00 curve described in CLAUDE.md (most players 82 to 94, tuned iteratively), with a linear rather than squared spike penalty so a bad run grades down smoothly instead of clamping straight to 0
+- Results screen: large score, condensed static trace, estimated percentile (static distribution table), a rotating flavor-text message for non-personal-best runs, Personal Best detection, Play Again, Share (stub), and Home
+- Local persistence: best score and run history (AsyncStorage)
 - Personal Best moment: stronger haptic and celebratory animation
 
 Exit criteria: a first-time user can install, play, and see a believable score with zero network calls.
 
 ---
 
-## Phase 2: Polish Pass
+## Phase 2: Polish Pass (done)
 
 Goal: make Phase 1 feel like the finished product, not a prototype.
 
-- Full sound pass (countdown ticks, GO, PB celebration, button clicks), no background music
-- Full haptics pass per CLAUDE.md's Haptics section
-- Animation and transition pass: spring-based screen transitions, score reveal, trace draw-in
-- Typography, spacing, color pass against the Design Language section
-- Settings screen: Sound, Haptics, Privacy, Sign In (stub), About
-- Accessibility pass (dynamic type, reduced motion, VoiceOver labels)
+- Full sound pass (countdown ticks, GO, PB celebration, button clicks), no background music, all gated by the Settings sound toggle
+- Full haptics pass per CLAUDE.md's Haptics section, gated by the Settings haptics toggle
+- Animation and transition pass: spring-based screen transitions (skipped in favor of an instant cut when reduce motion is on), a fade-and-scale score reveal on every run, and a stroke draw-in animation for the results trace
+- Typography, spacing, color pass against the Design Language section, including moving stray hardcoded colors into the shared theme
+- Settings screen: Sound and Haptics toggles (persisted), Privacy (stub), Sign In (stub), About
+- Accessibility pass: accessibilityLabel and accessibilityRole on interactive elements, reduce-motion support for navigation transitions and the results/trace animations
 
 Exit criteria: launch, first run, and result feel like an Apple fitness app, not an arcade game.
 

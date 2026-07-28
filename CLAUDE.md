@@ -81,6 +81,8 @@ Sensor noise should never dramatically affect results.
 
 The scoring algorithm should reward consistency rather than luck.
 
+A run only counts if the player is actively holding the phone. See **Starting a Run**: the press-and-hold requirement exists so the game can't be trivially beaten by propping the phone on a still surface.
+
 ---
 
 ## Shareability
@@ -139,6 +141,10 @@ The Play button should always be the visual focus.
 ## Starting a Run
 
 Press **Play**.
+
+Press and hold the screen to begin. Keep holding through the countdown and the entire run. Letting go at any point cancels the run.
+
+This is the anti-propping measure: setting the phone down on a table or stand releases the touch, so a truly still run can only come from someone actively holding it. Without this, resting the phone on a flat surface would trivially produce a perfect score, which defeats the whole point of the game.
 
 3-second countdown.
 

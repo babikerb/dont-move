@@ -4,7 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import { getBestScore } from '../lib/storage';
-import { hapticButton } from '../lib/haptics';
+import { tapFeedback } from '../lib/feedback';
 import { colors, spacing } from '../theme/colors';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
@@ -25,22 +25,37 @@ export function HomeScreen({ navigation }: Props) {
   );
 
   const handlePlay = () => {
-    hapticButton();
-    navigation.navigate('Countdown');
+    tapFeedback();
+    navigation.navigate('Play');
   };
 
-  const handleStub = (label: string) => {
-    hapticButton();
-    Alert.alert(label, 'Coming soon.');
+  const handleLeaderboard = () => {
+    tapFeedback();
+    Alert.alert('Leaderboard', 'Coming soon.');
+  };
+
+  const handleSettings = () => {
+    tapFeedback();
+    navigation.navigate('Settings');
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.topRow}>
-        <Pressable onPress={() => handleStub('Leaderboard')} hitSlop={16}>
+        <Pressable
+          onPress={handleLeaderboard}
+          hitSlop={16}
+          accessibilityRole="button"
+          accessibilityLabel="Leaderboard"
+        >
           <Text style={styles.iconLabel}>Leaderboard</Text>
         </Pressable>
-        <Pressable onPress={() => handleStub('Settings')} hitSlop={16}>
+        <Pressable
+          onPress={handleSettings}
+          hitSlop={16}
+          accessibilityRole="button"
+          accessibilityLabel="Settings"
+        >
           <Text style={styles.iconLabel}>Settings</Text>
         </Pressable>
       </View>
@@ -51,7 +66,12 @@ export function HomeScreen({ navigation }: Props) {
         <View style={styles.bestScoreBlock}>
           <Text style={styles.bestScoreLabel}>BEST SCORE</Text>
           {bestScore !== null ? (
-            <Text style={styles.bestScoreValue}>{bestScore.toFixed(2)}</Text>
+            <Text
+              style={styles.bestScoreValue}
+              accessibilityLabel={`Best score ${bestScore.toFixed(2)}`}
+            >
+              {bestScore.toFixed(2)}
+            </Text>
           ) : (
             <Text style={styles.bestScoreEmpty}>Play your first run</Text>
           )}
@@ -61,6 +81,8 @@ export function HomeScreen({ navigation }: Props) {
       <Pressable
         style={({ pressed }) => [styles.playButton, pressed && styles.playButtonPressed]}
         onPress={handlePlay}
+        accessibilityRole="button"
+        accessibilityLabel="Play"
       >
         <Text style={styles.playButtonText}>PLAY</Text>
       </Pressable>
@@ -129,7 +151,7 @@ const styles = StyleSheet.create({
     opacity: 0.85,
   },
   playButtonText: {
-    color: '#000000',
+    color: colors.onAccent,
     fontSize: 20,
     fontWeight: '700',
     letterSpacing: 1,

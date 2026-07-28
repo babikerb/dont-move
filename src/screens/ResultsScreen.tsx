@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import {
+  AccessibilityInfo,
   Alert,
   Animated,
   Pressable,
@@ -13,7 +14,8 @@ import type { RootStackParamList } from '../navigation/RootNavigator';
 import { SeismographTrace } from '../components/SeismographTrace';
 import { formatPercentile } from '../lib/percentile';
 import { getResultMessage } from '../lib/resultMessages';
-import { hapticButton, hapticPersonalBest } from '../lib/haptics';
+import { hapticPersonalBest } from '../lib/haptics';
+import { tapFeedback } from '../lib/feedback';
 import { playSound } from '../lib/sound';
 import { colors, spacing } from '../theme/colors';
 
@@ -22,7 +24,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Results'>;
 export function ResultsScreen({ navigation, route }: Props) {
   const { score, trace, isPersonalBest } = route.params;
   const { width } = useWindowDimensions();
-  const scoreScale = useRef(new Animated.Value(isPersonalBest ? 0.85 : 1)).current;
+  const scoreScale = useRef(new Animated.Value(0.85)).current;
+  const scoreOpacity = useRef(new Animated.Value(0)).current;
 
   // Picked once per run so it doesn't change on re-render, and skipped for a
   // personal best since the PERSONAL BEST banner already carries that moment.
@@ -33,59 +36,105 @@ export function ResultsScreen({ navigation, route }: Props) {
   );
 
   useEffect(() => {
-    if (isPersonalBest) {
-      hapticPersonalBest();
-      playSound('pb');
-      Animated.spring(scoreScale, {
-        toValue: 1,
-        friction: 5,
-        tension: 60,
-        useNativeDriver: true,
-      }).start();
-    }
-    // Only replay the personal-best animation once, when this screen mounts.
+    let cancelled = false;
+
+    AccessibilityInfo.isReduceMotionEnabled().then((reduced) => {
+      if (cancelled) return;
+
+      if (reduced) {
+        scoreScale.setValue(1);
+        scoreOpacity.setValue(1);
+      } else {
+        Animated.parallel([
+          Animated.spring(scoreScale, {
+            toValue: 1,
+            friction: isPersonalBest ? 4 : 6,
+            tension: isPersonalBest ? 70 : 50,
+            useNativeDriver: true,
+          }),
+          Animated.timing(scoreOpacity, {
+            toValue: 1,
+            duration: 350,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      }
+
+      if (isPersonalBest) {
+        hapticPersonalBest();
+        playSound('pb');
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+    // Only replay the reveal animation once, when this screen mounts.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handlePlayAgain = () => {
-    hapticButton();
-    navigation.replace('Countdown');
+    tapFeedback();
+    navigation.replace('Play');
   };
 
   const handleShare = () => {
-    hapticButton();
+    tapFeedback();
     Alert.alert('Share', 'Coming soon.');
   };
 
   const handleHome = () => {
-    hapticButton();
+    tapFeedback();
     navigation.popToTop();
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.center}>
-        <Animated.Text style={[styles.score, { transform: [{ scale: scoreScale }] }]}>
+        <Animated.Text
+          style={[styles.score, { opacity: scoreOpacity, transform: [{ scale: scoreScale }] }]}
+        >
           {score.toFixed(2)}
         </Animated.Text>
         <Text style={styles.percentile}>{formatPercentile(score)}</Text>
         {resultMessage && <Text style={styles.resultMessage}>{resultMessage}</Text>}
 
         <View style={styles.traceWrapper}>
-          <SeismographTrace values={trace} width={width - spacing.lg * 4} height={60} strokeWidth={1.5} />
+          <SeismographTrace
+            values={trace}
+            width={width - spacing.lg * 4}
+            height={60}
+            strokeWidth={1.5}
+            animateIn
+          />
         </View>
 
         {isPersonalBest && <Text style={styles.personalBest}>PERSONAL BEST</Text>}
       </View>
 
       <View style={styles.actions}>
-        <Pressable style={[styles.button, styles.primaryButton]} onPress={handlePlayAgain}>
+        <Pressable
+          style={[styles.button, styles.primaryButton]}
+          onPress={handlePlayAgain}
+          accessibilityRole="button"
+          accessibilityLabel="Play again"
+        >
           <Text style={styles.primaryButtonText}>Play Again</Text>
         </Pressable>
-        <Pressable style={styles.button} onPress={handleShare}>
+        <Pressable
+          style={styles.button}
+          onPress={handleShare}
+          accessibilityRole="button"
+          accessibilityLabel="Share"
+        >
           <Text style={styles.secondaryButtonText}>Share</Text>
         </Pressable>
-        <Pressable style={styles.button} onPress={handleHome}>
+        <Pressable
+          style={styles.button}
+          onPress={handleHome}
+          accessibilityRole="button"
+          accessibilityLabel="Home"
+        >
           <Text style={styles.secondaryButtonText}>Home</Text>
         </Pressable>
       </View>
@@ -146,7 +195,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent,
   },
   primaryButtonText: {
-    color: '#000000',
+    color: colors.onAccent,
     fontSize: 17,
     fontWeight: '700',
   },
