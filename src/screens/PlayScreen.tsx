@@ -6,6 +6,7 @@ import type { RootStackParamList } from '../navigation/RootNavigator';
 import { TRACE_LENGTH, useMovementSession } from '../lib/sensors';
 import { computeScore, isTooStillToBeHandheld } from '../lib/scoring';
 import { saveRun } from '../lib/storage';
+import { submitRun } from '../lib/runSync';
 import { SeismographTrace } from '../components/SeismographTrace';
 import { hapticCountdownTick, hapticGo, hapticReleasedEarly } from '../lib/haptics';
 import { tapFeedback } from '../lib/feedback';
@@ -145,6 +146,8 @@ export function PlayScreen({ navigation }: Props) {
       trace: traceSnapshot,
       createdAt: new Date().toISOString(),
     });
+
+    submitRun({ score, movementScore, duration: RUN_DURATION_SECONDS });
 
     navigation.replace('Results', {
       score,
