@@ -21,59 +21,53 @@ const DEFAULT_AVATAR_OPTIONS: Record<string, unknown> = {
 // (see components/Avatar.tsx), so this works offline and needs no Storage
 // bucket. The id is what's stored on the user's profile; any device renders
 // the same avatar from it. Presented as choices in the Profile tab.
+//
+// Clothing is pinned rather than left to the seed's random hash: some
+// clothing styles (e.g. narrow hoodie cuts) don't reach the bottom corners
+// of the circular mask, leaving small gaps that show the background color
+// through. shirtCrewNeck is the one confirmed to fill flush on every seed.
+const PRESET_OPTIONS: Record<string, unknown> = { clothing: ['shirtCrewNeck'] };
+
 export const AVATAR_PRESETS: AvatarPreset[] = [
-  { id: 'Felix' },
-  { id: 'Aneka' },
-  { id: 'Jasper' },
-  { id: 'Luna' },
-  { id: 'Milo' },
-  { id: 'Nova' },
-  { id: 'Pip' },
-  { id: 'Ruby' },
-  { id: 'Theo' },
-  { id: 'Zara' },
-  { id: 'Bruno' },
-  { id: 'Cleo' },
+  { id: 'Felix', options: PRESET_OPTIONS },
+  { id: 'Aneka', options: PRESET_OPTIONS },
+  { id: 'Jasper', options: PRESET_OPTIONS },
+  { id: 'Luna', options: PRESET_OPTIONS },
+  { id: 'Milo', options: PRESET_OPTIONS },
+  { id: 'Nova', options: PRESET_OPTIONS },
+  { id: 'Pip', options: PRESET_OPTIONS },
+  { id: 'Ruby', options: PRESET_OPTIONS },
+  { id: 'Theo', options: PRESET_OPTIONS },
+  { id: 'Zara', options: PRESET_OPTIONS },
+  { id: 'Bruno', options: PRESET_OPTIONS },
+  { id: 'Cleo', options: PRESET_OPTIONS },
 ];
 
 export const AVATAR_IDS: string[] = AVATAR_PRESETS.map((a) => a.id);
 
 // Hidden avatars unlocked only by redeeming a code (RedeemCodeScreen), per
-// callit's pattern. avataaars has no literal "durag" asset - closest
-// available approximation is the plain `hat` top style recolored, over a
-// dark skin tone.
+// callit's pattern.
 export const SECRET_AVATARS: AvatarPreset[] = [
   {
-    id: 'PurpleDurag',
+    id: 'BlackBoyBald',
     options: {
-      // 'hat' renders as a floppy wide-brimmed hat, nothing like a durag.
-      // 'hijab' drapes over the shoulders/chest, wrong silhouette entirely.
-      // 'turban' sits fitted to the head with no brim or drape - closest
-      // available, even though avataaars has no true durag (with its back
-      // knot/tail). Pinned face (open eyes, tongue out) and a plain tee
-      // instead of the seed's random hash.
-      top: ['turban'],
-      hatColor: ['6D28FF'],
+      topProbability: 0,
       skinColor: ['3c1c0a'],
       facialHairProbability: 0,
-      eyes: ['default'],
+      accessories: ['sunglasses'],
+      accessoriesColor: ['000000'],
+      accessoriesProbability: 100,
       eyebrows: ['defaultNatural'],
       mouth: ['tongue'],
       clothing: ['shirtCrewNeck'],
       clothesColor: ['ffffff'],
-      // The turban is tall enough to reach the circular mask's edge at the
-      // default scale (visible as a flattened top instead of a smooth
-      // curve). A small scale-down specific to this preset clears it - kept
-      // per-avatar rather than global so every other (shorter) hairstyle
-      // still sits flush against the bottom of the circle.
-      scale: 95,
     },
   },
 ];
 
 // Redeem code (uppercase) -> avatar id.
 export const REDEEM_CODES: Record<string, string> = {
-  BPD: 'PurpleDurag',
+  BBB: 'BlackBoyBald',
 };
 
 export const AVATAR_OPTIONS_BY_ID: Record<string, Record<string, unknown>> = {

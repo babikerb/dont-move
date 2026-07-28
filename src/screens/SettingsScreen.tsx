@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import Constants from 'expo-constants';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
@@ -99,7 +100,9 @@ export function SettingsScreen({ navigation }: Props) {
 
         <View style={styles.aboutBlock}>
           <Text style={styles.aboutText}>Don't Move. Hold your phone as still as possible.</Text>
-          <Text style={styles.versionText}>VERSION 0.1.0</Text>
+          <Text style={styles.versionText}>
+            VERSION {Constants.expoConfig?.version ?? '0.1.0'}
+          </Text>
         </View>
       </ScrollView>
     </View>
