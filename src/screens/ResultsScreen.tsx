@@ -18,6 +18,7 @@ import { SeismographTrace } from '../components/SeismographTrace';
 import { ShareCard } from '../components/ShareCard';
 import { formatPercentile, formatTopPercent } from '../lib/percentile';
 import { fetchScorePercentile } from '../lib/leaderboard';
+import { useMyProfile } from '../lib/profileQuery';
 import { getResultMessage } from '../lib/resultMessages';
 import { hapticPersonalBest } from '../lib/haptics';
 import { tapFeedback } from '../lib/feedback';
@@ -29,6 +30,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Results'>;
 export function ResultsScreen({ navigation, route }: Props) {
   const { score, trace, isPersonalBest } = route.params;
   const { width } = useWindowDimensions();
+  const { data: profile } = useMyProfile();
   const scoreOpacity = useRef(new Animated.Value(0)).current;
   const shareCardRef = useRef<View>(null);
   const [isSharing, setIsSharing] = useState(false);
@@ -142,6 +144,8 @@ export function ResultsScreen({ navigation, route }: Props) {
             trace={trace}
             isPersonalBest={isPersonalBest}
             percentileText={percentileText}
+            username={profile?.username ?? 'GUEST'}
+            avatarId={profile?.avatarId}
           />
         </View>
       </View>

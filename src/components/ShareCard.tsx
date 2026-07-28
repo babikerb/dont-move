@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { Avatar } from './Avatar';
 import { SeismographTrace } from './SeismographTrace';
 import { formatPercentile } from '../lib/percentile';
 import { colors, fontFamily } from '../theme/colors';
@@ -23,14 +24,33 @@ interface ShareCardProps {
   // (live if it resolved there, the static estimate otherwise) rather than
   // recomputing its own and risking the two disagreeing.
   percentileText?: string;
+  // Whoever just played, so the card is recognizable as *their* result
+  // rather than a generic score screenshot. Falls back to GUEST, matching
+  // the same convention used on the Leaderboard for anonymous players.
+  username?: string | null;
+  avatarId?: string | null;
 }
 
-export function ShareCard({ score, trace, isPersonalBest, percentileText }: ShareCardProps) {
+export function ShareCard({
+  score,
+  trace,
+  isPersonalBest,
+  percentileText,
+  username,
+  avatarId,
+}: ShareCardProps) {
   return (
     <View style={styles.card}>
       <Text style={styles.wordmark}>DON'T MOVE</Text>
 
       <View style={styles.center}>
+        <View style={styles.identity}>
+          <Avatar id={avatarId} size={24} />
+          <Text style={styles.username} numberOfLines={1}>
+            {username ?? 'GUEST'}
+          </Text>
+        </View>
+
         <Text style={styles.score} numberOfLines={1} adjustsFontSizeToFit>
           {score.toFixed(2)}
         </Text>
@@ -68,6 +88,18 @@ const styles = StyleSheet.create({
   center: {
     alignItems: 'center',
     gap: 6,
+  },
+  identity: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+  },
+  username: {
+    color: colors.textSecondary,
+    fontSize: 13,
+    fontWeight: '600',
+    letterSpacing: 0.5,
   },
   score: {
     color: colors.textPrimary,
