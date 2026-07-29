@@ -28,11 +28,7 @@ function formatProvider(provider: string | null): string {
 
 const BENEFITS = ['Appear on the leaderboard', 'Sync progress across devices'];
 
-// The Vercel project was renamed to pause-landing, but the short
-// pause-landing.vercel.app subdomain is already claimed by an unrelated
-// project, so Vercel kept this project on its original domain - update once
-// a real custom domain (e.g. pause.bbabiker.com) is wired up.
-const PRIVACY_POLICY_URL = 'https://dont-move-landing.vercel.app/privacy/';
+const PRIVACY_POLICY_URL = 'https://pause.bbabiker.com/privacy/';
 
 export function AccountScreen({ navigation }: Props) {
   const queryClient = useQueryClient();
