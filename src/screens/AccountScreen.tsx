@@ -11,6 +11,7 @@ import { ListRow } from '../components/ListRow';
 import { GoogleIcon } from '../components/GoogleIcon';
 import { AccountInfo, deleteMyAccount, fetchAccountInfo, signOutToGuest } from '../lib/supabase';
 import { isAppleSignInAvailable, signInWithApple } from '../lib/appleAuth';
+import { signInWithGoogle } from '../lib/googleAuth';
 import { getDeviceCountryCode } from '../lib/country';
 import { setMyCountryIfUnset } from '../lib/profile';
 import { clearMyPushTokens, registerPushToken } from '../lib/notifications';
@@ -84,9 +85,20 @@ export function AccountScreen({ navigation }: Props) {
     }
   };
 
-  const handleGoogleSignIn = () => {
+  const handleGoogleSignIn = async () => {
+    if (busy) return;
     tapFeedback();
-    Alert.alert('Sign in with Google', 'Coming soon.');
+    setBusy(true);
+    const result = await signInWithGoogle();
+    setBusy(false);
+
+    if (result.ok) {
+      hapticPersonalBest();
+      invalidateEverything();
+      refresh();
+    } else if (result.reason === 'error') {
+      Alert.alert('Sign in failed', 'Something went wrong. Try again.');
+    }
   };
 
   const handleSignOut = () => {
@@ -163,8 +175,13 @@ export function AccountScreen({ navigation }: Props) {
             )}
 
             <Pressable
-              style={({ pressed }) => [styles.googleButton, pressed && styles.googleButtonPressed]}
+              style={({ pressed }) => [
+                styles.googleButton,
+                pressed && styles.googleButtonPressed,
+                busy && styles.googleButtonDisabled,
+              ]}
               onPress={handleGoogleSignIn}
+              disabled={busy}
               accessibilityRole="button"
               accessibilityLabel="Sign in with Google"
             >
@@ -231,6 +248,9 @@ const styles = StyleSheet.create({
   },
   googleButtonPressed: {
     opacity: 0.85,
+  },
+  googleButtonDisabled: {
+    opacity: 0.5,
   },
   googleButtonText: {
     color: '#1F1F1F',
