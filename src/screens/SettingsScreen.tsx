@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Linking, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import Constants from 'expo-constants';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -12,6 +12,8 @@ import { tapFeedback } from '../lib/feedback';
 import { colors, radius, spacing, type } from '../theme/colors';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Settings'>;
+
+const PRIVACY_POLICY_URL = 'https://pause.bbabiker.com/privacy';
 
 export function SettingsScreen({ navigation }: Props) {
   const [soundOn, setSoundOn] = useState(isSoundEnabled());
@@ -45,9 +47,9 @@ export function SettingsScreen({ navigation }: Props) {
     navigation.goBack();
   };
 
-  const handleStub = (label: string) => {
+  const handlePrivacy = () => {
     tapFeedback();
-    Alert.alert(label, 'Coming soon.');
+    Linking.openURL(PRIVACY_POLICY_URL);
   };
 
   const handleAccount = () => {
@@ -89,7 +91,7 @@ export function SettingsScreen({ navigation }: Props) {
         </View>
 
         <View style={styles.section}>
-          <ListRow label="PRIVACY" onPress={() => handleStub('Privacy')} />
+          <ListRow label="PRIVACY" onPress={handlePrivacy} />
           <ListRow
             label={isAnonymous ? 'SIGN IN' : 'ACCOUNT'}
             border={false}
