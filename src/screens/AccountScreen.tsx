@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Alert, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Linking, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useFocusEffect } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
@@ -27,6 +27,9 @@ function formatProvider(provider: string | null): string {
 }
 
 const BENEFITS = ['Appear on the leaderboard', 'Sync progress across devices'];
+
+// TODO(rebrand): update once the Pause landing page domain is live.
+const PRIVACY_POLICY_URL = 'https://dont-move-landing.vercel.app/privacy/';
 
 export function AccountScreen({ navigation }: Props) {
   const queryClient = useQueryClient();
@@ -83,6 +86,11 @@ export function AccountScreen({ navigation }: Props) {
     } else if (result.reason === 'error') {
       Alert.alert('Sign in failed', 'Something went wrong. Try again.');
     }
+  };
+
+  const handleOpenPrivacyPolicy = () => {
+    tapFeedback();
+    Linking.openURL(PRIVACY_POLICY_URL);
   };
 
   const handleGoogleSignIn = async () => {
@@ -188,6 +196,14 @@ export function AccountScreen({ navigation }: Props) {
               <GoogleIcon size={18} />
               <Text style={styles.googleButtonText}>Sign in with Google</Text>
             </Pressable>
+
+            <Text style={styles.legalText}>
+              By signing in, you agree to the{' '}
+              <Text style={styles.legalLink} onPress={handleOpenPrivacyPolicy}>
+                Privacy Policy
+              </Text>
+              .
+            </Text>
           </View>
         ) : (
           <View style={styles.accountBlock}>
@@ -256,6 +272,15 @@ const styles = StyleSheet.create({
     color: '#1F1F1F',
     fontSize: 16,
     fontWeight: '600',
+  },
+  legalText: {
+    color: colors.textTertiary,
+    fontSize: type.caption,
+    textAlign: 'center',
+  },
+  legalLink: {
+    color: colors.textSecondary,
+    textDecorationLine: 'underline',
   },
   accountBlock: {
     gap: spacing.xl,

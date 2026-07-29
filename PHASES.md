@@ -123,11 +123,13 @@ Exit criteria: a lapsed player gets pulled back in, and a competitive player get
 
 Goal: ship it.
 
-- App icons, splash, store screenshots and metadata (ASO pass)
-- Crash reporting and lightweight analytics (funnel: launch, play, result, share or replay)
-- Privacy policy (account deletion itself is covered by Phase 6, not repeated here)
-- TestFlight and internal testing round
-- Submit to App Store and Play Store
+- App icons and splash screen (done)
+- Landing page (done): a static HTML/CSS/JS site at `dont-move-landing` (GitHub: babikerb/dont-move-landing, deployed on Vercel with continuous deployment from `master`), in the app's own dark/retro/tactical visual identity rather than a generic template - hero, features, trust strip, FAQ, closing CTA
+- Privacy policy (done): live at the landing page's `/privacy` route, reflecting the app's actual data practices (guest play stays fully on-device; signing in stores only what's needed for the leaderboard/sync; Sentry and PostHog disclosed once wired up). Linked from the Account screen for guests ("By signing in you agree to the Privacy Policy") and from the app's footer
+- Store screenshots and metadata (ASO pass) - not started
+- Crash reporting (Sentry) and lightweight analytics (PostHog): both chosen for their free tiers and because the developer can view dashboards from their own account - blocked on account creation and DSN/API key, not yet wired into the app
+- TestFlight and internal testing round - not started
+- Submit to App Store and Play Store - not started
 
 Exit criteria: success metrics from CLAUDE.md are measurable in production (time to play, replay rate, share rate).
 
