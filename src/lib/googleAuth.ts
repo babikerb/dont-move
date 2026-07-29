@@ -4,7 +4,7 @@ import {
   isSuccessResponse,
   statusCodes,
 } from '@react-native-google-signin/google-signin';
-import { supabase } from './supabase';
+import { hasValidSession, supabase } from './supabase';
 import { migrateLocalHistoryToAccount } from './accountMigration';
 
 // Supabase validates the Google ID token's audience against the Web Client
@@ -51,8 +51,7 @@ export async function signInWithGoogle(): Promise<GoogleSignInResult> {
       return { ok: false, reason: 'error' };
     }
 
-    const { data: sessionData } = await supabase.auth.getSession();
-    const hasExistingSession = !!sessionData.session;
+    const hasExistingSession = await hasValidSession();
 
     if (hasExistingSession) {
       const { error: linkError } = await supabase.auth.linkIdentity({

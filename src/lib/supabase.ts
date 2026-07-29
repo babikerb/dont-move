@@ -57,6 +57,26 @@ export async function signOutToGuest(): Promise<void> {
   await supabase.auth.signOut();
 }
 
+// getSession() only reads the locally cached token, so if the underlying
+// account was deleted without going through this app's own signOut (e.g.
+// deleted directly via the Supabase dashboard/admin API), the device is
+// left holding a session that still looks valid locally but is dead
+// server-side. getUser() round-trips to the Auth server and actually
+// revalidates the JWT's subject, so a dangling session is caught and
+// cleared here - appleAuth.ts/googleAuth.ts both call this before deciding
+// whether to link the new identity to "the current session" or sign
+// straight into the find-or-create account, and a false positive there
+// surfaces as a linkIdentity call that fails with a real (non-"already
+// linked") error, i.e. a mysterious "Sign in failed".
+export async function hasValidSession(): Promise<boolean> {
+  const { data, error } = await supabase.auth.getUser();
+  if (error) {
+    await supabase.auth.signOut();
+    return false;
+  }
+  return !!data.user;
+}
+
 // Calls the delete-account Edge Function (service_role only - the client's
 // publishable key can never delete an auth.users row directly). The
 // function always deletes the caller's own id, derived server-side from

@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 import * as AppleAuthentication from 'expo-apple-authentication';
-import { supabase } from './supabase';
+import { hasValidSession, supabase } from './supabase';
 import { migrateLocalHistoryToAccount } from './accountMigration';
 
 export async function isAppleSignInAvailable(): Promise<boolean> {
@@ -35,8 +35,7 @@ export async function signInWithApple(): Promise<AppleSignInResult> {
       return { ok: false, reason: 'error' };
     }
 
-    const { data: sessionData } = await supabase.auth.getSession();
-    const hasExistingSession = !!sessionData.session;
+    const hasExistingSession = await hasValidSession();
 
     if (hasExistingSession) {
       const { error: linkError } = await supabase.auth.linkIdentity({
