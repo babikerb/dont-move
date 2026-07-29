@@ -95,7 +95,7 @@ export function ProfileScreen({ navigation }: ProfileScreenProps) {
 
         {isGuest && (
           <SignInBanner
-            message="Sign in to sync your profile and stats."
+            message="Sign in to keep your stats across devices."
             onPress={handleSignIn}
           />
         )}
