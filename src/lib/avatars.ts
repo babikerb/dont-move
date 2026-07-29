@@ -89,8 +89,11 @@ export const SECRET_AVATARS: AvatarPreset[] = [
     options: {
       skinColor: ['C68642'],
       top: ['shortWaved'],
-      hairColor: ['2C1B18'],
+      hairColor: ['000000'],
       eyes: ['default'],
+      facialHairProbability: 100,
+      facialHair: ['beardMedium'],
+      facialHairColor: ['000000'],
       accessories: ['prescription02'],
       accessoriesColor: ['000000'],
       accessoriesProbability: 100,
