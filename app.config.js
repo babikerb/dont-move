@@ -19,7 +19,7 @@ module.exports = {
     name: 'Pause',
     slug: 'dont-move',
     scheme: 'pause',
-    version: '0.1.0',
+    version: '1.0.0',
     orientation: 'portrait',
     icon: './assets/icon.png',
     userInterfaceStyle: 'dark',
