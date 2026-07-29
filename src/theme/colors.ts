@@ -13,7 +13,12 @@ export const colors = {
 
   accentGreen: '#7A9B6A',
   accentAmber: '#B8903F',
-  accentRed: '#B5493A',
+  // Lightened slightly from the original #B5493A - that version only hit
+  // 3.75:1 contrast against the background, failing WCAG AA's 4.5:1
+  // minimum for normal-sized text (it's used as body/caption-sized text in
+  // several places: error messages, the Delete Account link). Same hue and
+  // saturation, just enough lighter to clear 4.5:1.
+  accentRed: '#C65C4D',
   accentTeal: '#5E8A8E',
 
   onAccent: '#0A0A0A',

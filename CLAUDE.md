@@ -473,7 +473,7 @@ Accent is a small tactical-instrument palette, not one hue reused everywhere —
 
 - Green `#7A9B6A` — positive/active/primary: score, primary actions, personal best, "go"
 - Amber `#B8903F` — caution/secondary emphasis: ranks, secondary stats, in-progress states
-- Red `#B5493A` — danger/rejection: cancelled runs, errors, "stop"
+- Red `#C65C4D` — danger/rejection: cancelled runs, errors, "stop" (lightened slightly from an earlier `#B5493A` to clear WCAG AA contrast at normal text sizes)
 - Teal `#5E8A8E` — informational/secondary highlight: metadata, timestamps, non-primary tabs
 
 No rainbow colors, no purple, no bright blue, no bright gradients, no neon. Never rely on color alone to establish hierarchy — pair every accent use with typography/position, not color alone.

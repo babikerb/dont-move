@@ -7,26 +7,41 @@ import Aptabase, { trackEvent } from '@aptabase/react-native';
 // result, share or replay), not general-purpose event tracking.
 const APP_KEY = 'A-US-7325781948';
 
+// Every call here is wrapped defensively - analytics is the last thing that
+// should ever be able to crash the app. init() in particular runs
+// synchronously inside App.tsx's mount-time useEffect with no error
+// boundary above it; if the native module isn't linked for any reason
+// (e.g. a build that predates this dependency being added), an uncaught
+// throw there would take down the entire app at launch, not just silently
+// skip tracking.
+function safely(fn: () => void): void {
+  try {
+    fn();
+  } catch (err) {
+    console.warn('Analytics call failed (ignored):', err);
+  }
+}
+
 export function initAnalytics(): void {
-  Aptabase.init(APP_KEY);
+  safely(() => Aptabase.init(APP_KEY));
 }
 
 export function trackAppLaunched(): void {
-  trackEvent('app_launched');
+  safely(() => trackEvent('app_launched'));
 }
 
 export function trackPlayStarted(): void {
-  trackEvent('play_started');
+  safely(() => trackEvent('play_started'));
 }
 
 export function trackRunCompleted(score: number, isPersonalBest: boolean): void {
-  trackEvent('run_completed', { score, isPersonalBest });
+  safely(() => trackEvent('run_completed', { score, isPersonalBest }));
 }
 
 export function trackPlayAgain(): void {
-  trackEvent('play_again');
+  safely(() => trackEvent('play_again'));
 }
 
 export function trackShared(): void {
-  trackEvent('shared');
+  safely(() => trackEvent('shared'));
 }

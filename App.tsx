@@ -46,14 +46,20 @@ export default function App() {
   });
 
   useEffect(() => {
-    loadSettings();
-    configureAudio();
+    // Each fire-and-forget call gets its own .catch() - they're independent
+    // (none awaits another), so one failing (a flaky permissions API, a
+    // network hiccup) shouldn't produce an unhandled promise rejection or
+    // stop any of the others from running.
+    loadSettings().catch((err) => console.warn('loadSettings failed:', err));
+    configureAudio().catch((err) => console.warn('configureAudio failed:', err));
     // No account is created at launch - guest play stays fully local until
     // the player explicitly signs in (CLAUDE.md's First Run Experience).
     // The notification permission prompt is the one deliberate exception to
     // "nothing at launch": asked immediately so it's resolved before it'd
     // otherwise interrupt gameplay later.
-    requestNotificationPermissionOnLaunch();
+    requestNotificationPermissionOnLaunch().catch((err) =>
+      console.warn('requestNotificationPermissionOnLaunch failed:', err)
+    );
     initAnalytics();
     trackAppLaunched();
   }, []);
