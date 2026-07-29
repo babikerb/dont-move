@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getRunHistory } from './storage';
 import { supabase } from './supabase';
 
-const MIGRATED_KEY = '@dontmove/localHistoryMigrated';
+const MIGRATED_KEY = '@pause/localHistoryMigrated';
 
 // Anonymous-to-real sign-in (Apple/Google) upgrades the same auth user via
 // identity linking, so it keeps the same auth.uid() - runs already synced by

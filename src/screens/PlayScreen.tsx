@@ -10,6 +10,7 @@ import { saveRun } from '../lib/storage';
 import { submitRun } from '../lib/runSync';
 import { fetchMyStats } from '../lib/stats';
 import { scheduleComeBackReminder } from '../lib/notifications';
+import { trackPlayStarted, trackRunCompleted } from '../lib/analytics';
 import { SeismographTrace } from '../components/SeismographTrace';
 import { hapticCountdownTick, hapticGo, hapticReleasedEarly } from '../lib/haptics';
 import { tapFeedback } from '../lib/feedback';
@@ -172,6 +173,7 @@ export function PlayScreen({ navigation }: Props) {
     // Pushes the "come back" local reminder another 24h out from now,
     // rather than leaving whatever was scheduled at launch/last run.
     scheduleComeBackReminder();
+    trackRunCompleted(score, isPersonalBest);
 
     navigation.replace('Results', {
       score,
@@ -187,6 +189,7 @@ export function PlayScreen({ navigation }: Props) {
     heldRef.current = true;
     setCancelReason(null);
     setPhase('countdown');
+    trackPlayStarted();
   };
 
   const handlePressOut = () => {

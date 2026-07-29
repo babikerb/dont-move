@@ -14,6 +14,7 @@ import { RootNavigator } from './src/navigation/RootNavigator';
 import { loadSettings } from './src/lib/settings';
 import { configureAudio } from './src/lib/sound';
 import { requestNotificationPermissionOnLaunch } from './src/lib/notifications';
+import { initAnalytics, trackAppLaunched } from './src/lib/analytics';
 
 // Keeps the native splash (icon.png, full-width, pure black bg - see
 // app.json's expo-splash-screen config) on screen until fonts are ready,
@@ -53,6 +54,8 @@ export default function App() {
     // "nothing at launch": asked immediately so it's resolved before it'd
     // otherwise interrupt gameplay later.
     requestNotificationPermissionOnLaunch();
+    initAnalytics();
+    trackAppLaunched();
   }, []);
 
   useEffect(() => {

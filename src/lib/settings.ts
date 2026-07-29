@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const SOUND_KEY = '@dontmove/soundEnabled';
-const HAPTICS_KEY = '@dontmove/hapticsEnabled';
+const SOUND_KEY = '@pause/soundEnabled';
+const HAPTICS_KEY = '@pause/hapticsEnabled';
 
 // Read synchronously by haptics.ts and sound.ts on every trigger, so the
 // toggle in Settings takes effect immediately without an AsyncStorage round

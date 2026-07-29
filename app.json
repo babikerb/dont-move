@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "Don't Move",
-    "slug": "dont-move",
-    "scheme": "dontmove",
+    "name": "Pause",
+    "slug": "pause",
+    "scheme": "pause",
     "version": "0.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -41,7 +41,7 @@
       [
         "expo-sensors",
         {
-          "motionPermission": "Don't Move uses motion data to score how still you're holding your phone."
+          "motionPermission": "Pause uses motion data to score how still you're holding your phone."
         }
       ],
       [

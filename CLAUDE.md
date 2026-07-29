@@ -1,12 +1,12 @@
 # CLAUDE.md
 
-# Don't Move
+# Pause
 
-Don't Move is a mobile game where players compete to hold their phone as still as possible.
+Pause is a mobile game where players compete to hold their phone as still as possible.
 
 The concept should be understandable in under five seconds.
 
-> "Don't move."
+> "Pause."
 
 That's the entire game.
 
@@ -16,7 +16,7 @@ The product should feel more like an Apple-designed fitness app than an arcade g
 
 # Vision
 
-Don't Move is designed to become a social challenge app.
+Pause is designed to become a social challenge app.
 
 Every session should naturally lead to one of three actions:
 
@@ -32,12 +32,12 @@ Everything else is secondary.
 
 # Visual Theme: The Human Seismograph
 
-Don't Move has one visual signature that appears everywhere movement is shown: a live trace line, styled after a seismograph / EKG monitor.
+Pause has one visual signature that appears everywhere movement is shown: a live trace line, styled after a seismograph / EKG monitor.
 
 - **During the run**, the "minimal movement indicator" required in the Gameplay spec IS this trace: a thin animated line drawn in the accent green, scrolling left to right. Perfect stillness renders as a flat line. Any movement produces a spike proportional to its severity.
 - **Perfect stillness looks like a flatline.** This is intentional. It borrows the emotional weight of a medical monitor (calm, clinical, slightly tense) and reframes "I didn't move" as "I flatlined," which is both a legitimate flex and a joke worth sharing.
 - **On the Results screen**, a condensed, static version of the player's trace can appear as a secondary element beneath the score (never competing with it for visual weight).
-- **On the Share Card**, the trace is the second-most prominent element after the score itself. It's what makes the card recognizable as *this specific run* rather than a generic score screenshot, and what makes it recognizable as *Don't Move* at a glance even with no logo visible.
+- **On the Share Card**, the trace is the second-most prominent element after the score itself. It's what makes the card recognizable as *this specific run* rather than a generic score screenshot, and what makes it recognizable as *Pause* at a glance even with no logo visible.
 - This motif is the natural foundation for the future "Movement graph" and "Replay visualization" features. Those are a zoomed-in, scrubbable version of the same trace, not a new concept.
 
 Rendering notes:
@@ -95,7 +95,7 @@ The share image should look good enough that users want to post it without editi
 
 # First Run Experience
 
-Don't Move should have zero friction.
+Pause should have zero friction.
 
 A new user should be able to install the app and begin their first run immediately without creating an account.
 
@@ -291,7 +291,7 @@ Generate automatically after every run.
 Layout deliberately mirrors the Results screen rather than being a separate design, so it feels like a direct extension of what the player just saw, not a different artifact:
 
 ```
-DON'T MOVE
+PAUSE
 
 98.42
 
@@ -302,7 +302,7 @@ _____/\____________   (your trace)
 Can you beat me?
 ```
 
-The wordmark is small and quiet, not a dominant logo lockup. No QR code. The trace line is the second-most prominent element after the score. Flat sections read as "flatlined," a spike reads as the moment they slipped. It's what makes the card recognizable as a Don't Move result even at a glance.
+The wordmark is small and quiet, not a dominant logo lockup. No QR code. The trace line is the second-most prominent element after the score. Flat sections read as "flatlined," a spike reads as the moment they slipped. It's what makes the card recognizable as a Pause result even at a glance.
 
 Optional additions:
 
@@ -570,6 +570,6 @@ The share card is attractive enough that users voluntarily post it.
 
 Every design decision should answer one question:
 
-> Does this make Don't Move more fun, more understandable, or more shareable?
+> Does this make Pause more fun, more understandable, or more shareable?
 
 If the answer is no, don't build it.

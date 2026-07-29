@@ -99,7 +99,7 @@ export function SettingsScreen({ navigation }: Props) {
         </View>
 
         <View style={styles.aboutBlock}>
-          <Text style={styles.aboutText}>Don't Move. Hold your phone as still as possible.</Text>
+          <Text style={styles.aboutText}>Pause. Hold your phone as still as possible.</Text>
           <Text style={styles.versionText}>
             VERSION {Constants.expoConfig?.version ?? '0.1.0'}
           </Text>

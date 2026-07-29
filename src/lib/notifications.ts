@@ -51,7 +51,7 @@ export async function scheduleComeBackReminder(): Promise<void> {
   await Notifications.scheduleNotificationAsync({
     identifier: COME_BACK_REMINDER_ID,
     content: {
-      title: "Don't Move",
+      title: 'Pause',
       body: 'Think you can still hold it steady? Come find out.',
     },
     trigger: {

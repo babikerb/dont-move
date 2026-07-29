@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const BEST_SCORE_KEY = '@dontmove/bestScore';
-const RUN_HISTORY_KEY = '@dontmove/runHistory';
+const BEST_SCORE_KEY = '@pause/bestScore';
+const RUN_HISTORY_KEY = '@pause/runHistory';
 const MAX_HISTORY = 50;
 
 export interface StoredRun {

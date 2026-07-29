@@ -52,9 +52,7 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + spacing.xl }]}>
-      <Text style={styles.wordmark}>
-        DON'T <Text style={styles.wordmarkAccent}>MOVE</Text>
-      </Text>
+      <Text style={styles.wordmark}>PAUSE</Text>
 
       <View style={styles.center}>
         <Text style={styles.bestScoreLabel}>BEST SCORE</Text>
@@ -90,9 +88,6 @@ const styles = StyleSheet.create({
     fontSize: type.label,
     fontWeight: '700',
     letterSpacing: 3,
-  },
-  wordmarkAccent: {
-    color: colors.accentGreen,
   },
   center: {
     flex: 1,

@@ -1,4 +1,4 @@
-# Don't Move: Build Phases
+# Pause: Build Phases
 
 No code is written as part of this document. Each phase should ship something that runs, before moving to the next.
 
@@ -124,10 +124,10 @@ Exit criteria: a lapsed player gets pulled back in, and a competitive player get
 Goal: ship it.
 
 - App icons and splash screen (done)
-- Landing page (done): a static HTML/CSS/JS site at `dont-move-landing` (GitHub: babikerb/dont-move-landing, deployed on Vercel with continuous deployment from `master`), in the app's own dark/retro/tactical visual identity rather than a generic template - hero, features, trust strip, FAQ, closing CTA
-- Privacy policy (done): live at the landing page's `/privacy` route, reflecting the app's actual data practices (guest play stays fully on-device; signing in stores only what's needed for the leaderboard/sync; Sentry and PostHog disclosed once wired up). Linked from the Account screen for guests ("By signing in you agree to the Privacy Policy") and from the app's footer
+- Landing page (done): a static HTML/CSS/JS site at `pause-landing` (GitHub: babikerb/pause-landing, deployed on Vercel with continuous deployment from `master`), in the app's own dark/retro/tactical visual identity rather than a generic template - hero, features, trust strip, FAQ, closing CTA. Currently served at `dont-move-landing.vercel.app` (the short `pause-landing.vercel.app` subdomain is already claimed by an unrelated Vercel project) until a real custom domain is wired up
+- Privacy policy (done): live at the landing page's `/privacy` route, reflecting the app's actual data practices (guest play stays fully on-device; signing in stores only what's needed for the leaderboard/sync; Aptabase analytics disclosed). Linked from the Account screen for guests ("By signing in you agree to the Privacy Policy") and from the app's footer
 - Store screenshots and metadata (ASO pass) - not started
-- Crash reporting (Sentry) and lightweight analytics (PostHog): both chosen for their free tiers and because the developer can view dashboards from their own account - blocked on account creation and DSN/API key, not yet wired into the app
+- Lightweight analytics via Aptabase (done): chosen for its free tier, privacy-first design (no ads/tracking IDs), and per-app dashboard the developer can log into directly. No separate crash-reporting SDK - deferred rather than added now for its own sake
 - TestFlight and internal testing round - not started
 - Submit to App Store and Play Store - not started
 

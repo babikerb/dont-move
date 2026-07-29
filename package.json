@@ -1,10 +1,11 @@
 {
-  "name": "dont-move",
-  "description": "Don't Move: hold your phone as still as possible.",
+  "name": "pause",
+  "description": "Pause: hold your phone as still as possible.",
   "private": true,
   "version": "0.1.0",
   "main": "index.ts",
   "dependencies": {
+    "@aptabase/react-native": "^0.5.0",
     "@dicebear/collection": "^9.4.2",
     "@dicebear/core": "^9.4.3",
     "@expo-google-fonts/jetbrains-mono": "^0.4.1",

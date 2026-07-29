@@ -23,6 +23,7 @@ import { getResultMessage } from '../lib/resultMessages';
 import { hapticPersonalBest } from '../lib/haptics';
 import { tapFeedback } from '../lib/feedback';
 import { playSound } from '../lib/sound';
+import { trackPlayAgain, trackShared } from '../lib/analytics';
 import { colors, fontFamily, spacing, type } from '../theme/colors';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Results'>;
@@ -91,6 +92,7 @@ export function ResultsScreen({ navigation, route }: Props) {
 
   const handlePlayAgain = () => {
     tapFeedback();
+    trackPlayAgain();
     navigation.replace('Play');
   };
 
@@ -109,6 +111,7 @@ export function ResultsScreen({ navigation, route }: Props) {
       const uri = await captureRef(shareCardRef, { format: 'png', quality: 1 });
       const fileUri = uri.startsWith('file://') ? uri : `file://${uri}`;
       await Sharing.shareAsync(fileUri, { mimeType: 'image/png', dialogTitle: 'Share your score' });
+      trackShared();
     } catch {
       Alert.alert('Share failed', 'Something went wrong creating your share image.');
     } finally {

@@ -41,7 +41,7 @@ export function ShareCard({
 }: ShareCardProps) {
   return (
     <View style={styles.card}>
-      <Text style={styles.wordmark}>DON'T MOVE</Text>
+      <Text style={styles.wordmark}>PAUSE</Text>
 
       <View style={styles.center}>
         <View style={styles.identity}>
