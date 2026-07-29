@@ -44,6 +44,20 @@
           "icon": "./assets/icon.png",
           "color": "#7A9B6A"
         }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#000000",
+          "image": "./assets/icon.png",
+          "resizeMode": "contain",
+          "ios": {
+            "enableFullScreenImage_legacy": true
+          },
+          "android": {
+            "imageWidth": 320
+          }
+        }
       ]
     ],
     "extra": {

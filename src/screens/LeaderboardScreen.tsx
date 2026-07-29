@@ -36,7 +36,7 @@ function RowSkeleton() {
   return (
     <View style={styles.row}>
       <Skeleton width={20} height={16} />
-      <Skeleton width={32} height={32} cornerRadius={radius.lg} />
+      <Skeleton width={26} height={26} cornerRadius={radius.lg} />
       <Skeleton width="40%" height={16} style={{ flex: 1 }} />
       <Skeleton width={50} height={16} />
     </View>
@@ -229,12 +229,17 @@ export function LeaderboardScreen({ navigation }: LeaderboardScreenProps) {
             renderItem={({ item }) => (
               <View style={[styles.row, item.userId === myUserId && styles.rowMe]}>
                 <Text style={styles.rank}>{String(item.rank).padStart(2, '0')}</Text>
-                <Avatar id={item.avatarId} size={32} />
+                <Avatar id={item.avatarId} size={26} />
                 <View style={styles.usernameRow}>
                   {scope === 'global' && item.country && (
                     <Text style={styles.rowFlag}>{countryFlag(item.country)}</Text>
                   )}
-                  <Text style={styles.username} numberOfLines={1}>
+                  <Text
+                    style={styles.username}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.75}
+                  >
                     {item.username ?? 'GUEST'}
                   </Text>
                   {item.isDev && <DevBadge size={12} />}
@@ -372,9 +377,9 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
+    gap: spacing.xs,
     paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.sm,
+    paddingHorizontal: spacing.xs,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
@@ -384,23 +389,27 @@ const styles = StyleSheet.create({
   rank: {
     color: colors.accentAmber,
     fontFamily: fontFamily.mono,
-    fontSize: type.body,
-    width: 28,
+    fontSize: type.caption,
+    width: 20,
   },
   usernameRow: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.xs,
+    gap: 3,
   },
   rowFlag: {
-    fontSize: 13,
+    fontSize: 12,
   },
+  // adjustsFontSizeToFit is the actual guarantee against ellipsis - the
+  // tighter rank/avatar/gap sizing above buys back room so it rarely has to
+  // shrink at all for the common case (today's usernames are a fixed 14
+  // chars), but a future editable/longer username still won't truncate.
   username: {
+    flexShrink: 1,
     color: colors.textPrimary,
     fontSize: type.body,
     fontWeight: '600',
-    flexShrink: 1,
   },
   score: {
     color: colors.textPrimary,

@@ -8,6 +8,7 @@ import { TRACE_LENGTH, useMovementSession } from '../lib/sensors';
 import { computeScore, isTooStillToBeHandheld } from '../lib/scoring';
 import { saveRun } from '../lib/storage';
 import { submitRun } from '../lib/runSync';
+import { fetchMyStats } from '../lib/stats';
 import { scheduleComeBackReminder } from '../lib/notifications';
 import { SeismographTrace } from '../components/SeismographTrace';
 import { hapticCountdownTick, hapticGo, hapticReleasedEarly } from '../lib/haptics';
@@ -56,6 +57,11 @@ export function PlayScreen({ navigation }: Props) {
 
   const heldRef = useRef(false);
   const finishedRef = useRef(false);
+  // Fetched in the background over the run's 20 seconds rather than at the
+  // moment it finishes, so verifying the account's real best score against
+  // Supabase doesn't add a visible delay right when the player is waiting
+  // to see their result. See saveRun's remoteBest param in storage.ts.
+  const remoteBestRef = useRef<Promise<number | null>>(Promise.resolve(null));
 
   const resetToIdle = useCallback(() => {
     heldRef.current = false;
@@ -101,6 +107,7 @@ export function PlayScreen({ navigation }: Props) {
     if (phase !== 'running') return;
 
     start();
+    remoteBestRef.current = fetchMyStats().then((stats) => stats?.bestScore ?? null);
     const startedAt = Date.now();
     const interval = setInterval(() => {
       if (finishedRef.current) return;
@@ -142,13 +149,17 @@ export function PlayScreen({ navigation }: Props) {
     }
 
     const traceSnapshot = downsample(frames, STORED_TRACE_LENGTH);
+    const remoteBest = await remoteBestRef.current;
 
-    const { isPersonalBest, bestScore } = await saveRun({
-      score,
-      movementScore,
-      trace: traceSnapshot,
-      createdAt: new Date().toISOString(),
-    });
+    const { isPersonalBest, bestScore } = await saveRun(
+      {
+        score,
+        movementScore,
+        trace: traceSnapshot,
+        createdAt: new Date().toISOString(),
+      },
+      remoteBest
+    );
 
     submitRun({ score, movementScore, duration: RUN_DURATION_SECONDS }).then(() => {
       // Leaderboard already updates itself via the Realtime broadcast

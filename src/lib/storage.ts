@@ -40,8 +40,16 @@ export async function reconcileBestScore(remoteBest: number | null): Promise<num
   return remoteBest;
 }
 
-export async function saveRun(run: StoredRun): Promise<SaveRunResult> {
-  const [previousBest, history] = await Promise.all([getBestScore(), getRunHistory()]);
+// remoteBest lets a signed-in run finish know about a better score already
+// synced to the account (e.g. right after a reinstall, before Home's own
+// separate reconciliation on mount has had a chance to run and write it to
+// AsyncStorage) - without it, a fresh install's empty local storage would
+// make any run look like a personal best even against an account with a
+// much higher one already on file.
+export async function saveRun(run: StoredRun, remoteBest: number | null = null): Promise<SaveRunResult> {
+  const [localBest, history] = await Promise.all([getBestScore(), getRunHistory()]);
+  const previousBest =
+    remoteBest !== null && (localBest === null || remoteBest > localBest) ? remoteBest : localBest;
   const isPersonalBest = previousBest === null || run.score > previousBest;
   const bestScore = isPersonalBest ? run.score : previousBest;
 
