@@ -70,11 +70,51 @@ export const SECRET_AVATARS: AvatarPreset[] = [
       translateY: 4,
     },
   },
+  {
+    id: 'PakistaniGuyTurban',
+    options: {
+      skinColor: ['D08B5B'],
+      top: ['turban'],
+      hatColor: ['FF9933'],
+      facialHairProbability: 100,
+      facialHair: ['beardMedium'],
+      facialHairColor: ['000000'],
+      eyes: ['default'],
+      clothing: ['shirtCrewNeck'],
+      backgroundColor: ['7A9B6A'],
+    },
+  },
+  {
+    id: 'BengaliManGlasses',
+    options: {
+      skinColor: ['C68642'],
+      top: ['shortWaved'],
+      hairColor: ['2C1B18'],
+      eyes: ['default'],
+      accessories: ['prescription02'],
+      accessoriesColor: ['000000'],
+      accessoriesProbability: 100,
+      // hoodie is one of the clothing styles PRESET_OPTIONS above avoids
+      // (narrow cuts that don't always reach the circular mask's bottom
+      // corners) - kept here since it's what was actually asked for, but
+      // check this one on-device and swap to shirtCrewNeck if a gap shows.
+      clothing: ['hoodie'],
+      clothesColor: ['D2B48C'],
+      // A muted, desaturated purple rather than a bright/neon one - the
+      // app's UI palette avoids purple entirely (CLAUDE.md), but this is a
+      // hidden joke avatar, not primary UI, so it stays in the same muted
+      // family as the other accent-colored avatar backgrounds instead of
+      // clashing with a saturated violet.
+      backgroundColor: ['7D6B96'],
+    },
+  },
 ];
 
 // Redeem code (uppercase) -> avatar id.
 export const REDEEM_CODES: Record<string, string> = {
   BBB: 'BlackBoyBald',
+  APT62: 'PakistaniGuyTurban',
+  FISH67: 'BengaliManGlasses',
 };
 
 export const AVATAR_OPTIONS_BY_ID: Record<string, Record<string, unknown>> = {

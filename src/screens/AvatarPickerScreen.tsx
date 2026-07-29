@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
@@ -66,29 +66,35 @@ export function AvatarPickerScreen({ navigation }: Props) {
   const unlockedSecrets = SECRET_AVATARS.filter((a) => unlockedIds.includes(a.id));
   const options = [...AVATAR_IDS, ...unlockedSecrets.map((a) => a.id)];
 
+  const GRID_COLUMNS = 4;
+
   return (
     <View style={styles.container}>
       <Header title="Choose Avatar" action={{ label: 'Done', onPress: handleDone }} divider />
 
-      <View style={styles.body}>
-        <View style={styles.grid}>
-          {options.map((id) => (
-            <Pressable
-              key={id}
-              onPress={() => handleSelect(id)}
-              style={[styles.option, id === selectedId && styles.optionSelected]}
-              accessibilityRole="button"
-              accessibilityLabel={`Avatar ${id}`}
-            >
-              <Avatar id={id} size={56} />
-            </Pressable>
-          ))}
-        </View>
-
-        <Pressable onPress={handleRedeem} accessibilityRole="button" style={styles.redeemRow}>
-          <Text style={styles.redeemText}>HAVE A CODE?</Text>
-        </Pressable>
-      </View>
+      <FlatList
+        data={options}
+        keyExtractor={(id) => id}
+        numColumns={GRID_COLUMNS}
+        contentContainerStyle={styles.grid}
+        columnWrapperStyle={styles.gridRow}
+        showsVerticalScrollIndicator={false}
+        renderItem={({ item: id }) => (
+          <Pressable
+            onPress={() => handleSelect(id)}
+            style={[styles.option, id === selectedId && styles.optionSelected]}
+            accessibilityRole="button"
+            accessibilityLabel={`Avatar ${id}`}
+          >
+            <Avatar id={id} size={56} />
+          </Pressable>
+        )}
+        ListFooterComponent={
+          <Pressable onPress={handleRedeem} accessibilityRole="button" style={styles.redeemRow}>
+            <Text style={styles.redeemText}>HAVE A CODE?</Text>
+          </Pressable>
+        }
+      />
     </View>
   );
 }
@@ -98,25 +104,28 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  body: {
-    flex: 1,
+  grid: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
+    paddingBottom: spacing.xxl,
+    gap: spacing.md,
   },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+  gridRow: {
+    gap: spacing.md,
   },
   option: {
-    width: '22%',
+    // flex: 1 (rather than a manual percentage width) lets the row divide
+    // its own actual available width evenly across every column, gap
+    // included - the previous 22% + space-between math didn't account for
+    // gaps the same way, so the rendered circle and its slot could drift
+    // out of sync and clip on one edge.
+    flex: 1,
     aspectRatio: 1,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: 'transparent',
     borderRadius: radius.lg,
-    marginBottom: spacing.md,
   },
   optionSelected: {
     borderColor: colors.accentGreen,
