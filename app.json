@@ -39,6 +39,12 @@
       "expo-apple-authentication",
       "expo-localization",
       [
+        "expo-sensors",
+        {
+          "motionPermission": "Don't Move uses motion data to score how still you're holding your phone."
+        }
+      ],
+      [
         "expo-notifications",
         {
           "icon": "./assets/icon.png",
