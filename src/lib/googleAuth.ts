@@ -9,17 +9,21 @@ import { migrateLocalHistoryToAccount } from './accountMigration';
 
 // Supabase validates the Google ID token's audience against the Web Client
 // ID registered in its own Google provider settings, not the iOS one - the
-// iOS client only drives the native sign-in UI/URL scheme (see app.json's
-// @react-native-google-signin/google-signin plugin config). Configuring
-// with just the iOS client would produce a token Supabase rejects as an
-// audience mismatch.
+// token's audience must be this one, or Supabase rejects it as a mismatch.
 const WEB_CLIENT_ID = '800321101197-0dbgd7ehjaqjc1a1ochpo3o291f2jpcs.apps.googleusercontent.com';
+
+// Not using Firebase (no GoogleService-Info.plist bundled), so the native
+// module can't infer this from anywhere - app.json's iosUrlScheme plugin
+// config only registers the URL scheme for the OAuth redirect callback, it
+// doesn't set this. Without it, configure() throws "failed to determine
+// clientID" at sign-in time.
+const IOS_CLIENT_ID = '800321101197-4nf91b2m0jucansncl7e1nkqfibr168e.apps.googleusercontent.com';
 
 let configured = false;
 
 function ensureConfigured() {
   if (configured) return;
-  GoogleSignin.configure({ webClientId: WEB_CLIENT_ID });
+  GoogleSignin.configure({ webClientId: WEB_CLIENT_ID, iosClientId: IOS_CLIENT_ID });
   configured = true;
 }
 
