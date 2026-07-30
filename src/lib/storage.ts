@@ -2,7 +2,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const BEST_SCORE_KEY = '@pause/bestScore';
 const RUN_HISTORY_KEY = '@pause/runHistory';
+const TOO_STILL_LOG_KEY = '@pause/tooStillLog';
 const MAX_HISTORY = 50;
+const MAX_TOO_STILL_LOG = 50;
 
 export interface StoredRun {
   score: number;
@@ -14,6 +16,11 @@ export interface StoredRun {
 export interface SaveRunResult {
   isPersonalBest: boolean;
   bestScore: number;
+}
+
+export interface TooStillRejection {
+  movementScore: number;
+  createdAt: string;
 }
 
 export async function getBestScore(): Promise<number | null> {
@@ -61,4 +68,24 @@ export async function saveRun(run: StoredRun, remoteBest: number | null = null):
   ]);
 
   return { isPersonalBest, bestScore };
+}
+
+// A "too still to be handheld" cancel currently discards the run entirely -
+// no record survives anywhere, local or remote, so a false positive is
+// invisible. This keeps a small on-device-only log (never synced, never
+// sent to analytics) of just the movementScore that tripped the floor, so
+// MIN_LIVENESS_MOVEMENT can eventually be recalibrated against real
+// rejected attempts instead of guesswork.
+export async function logTooStillRejection(movementScore: number): Promise<void> {
+  const existing = await getTooStillRejections();
+  const next = [{ movementScore, createdAt: new Date().toISOString() }, ...existing].slice(
+    0,
+    MAX_TOO_STILL_LOG
+  );
+  await AsyncStorage.setItem(TOO_STILL_LOG_KEY, JSON.stringify(next));
+}
+
+export async function getTooStillRejections(): Promise<TooStillRejection[]> {
+  const raw = await AsyncStorage.getItem(TOO_STILL_LOG_KEY);
+  return raw ? (JSON.parse(raw) as TooStillRejection[]) : [];
 }

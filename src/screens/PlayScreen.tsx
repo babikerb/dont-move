@@ -6,7 +6,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/RootNavigator';
 import { TRACE_LENGTH, useMovementSession } from '../lib/sensors';
 import { computeScore, isTooStillToBeHandheld } from '../lib/scoring';
-import { saveRun } from '../lib/storage';
+import { logTooStillRejection, saveRun } from '../lib/storage';
 import { submitRun } from '../lib/runSync';
 import { fetchMyStats } from '../lib/stats';
 import { scheduleComeBackReminder } from '../lib/notifications';
@@ -145,6 +145,7 @@ export function PlayScreen({ navigation }: Props) {
     const { score, movementScore } = computeScore(frames);
 
     if (isTooStillToBeHandheld(movementScore)) {
+      logTooStillRejection(movementScore);
       cancelRun('tooStill');
       return;
     }

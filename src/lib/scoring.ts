@@ -21,11 +21,18 @@ const SPIKE_PEAK_PENALTY_SCALE = 0.6;
 // the angle it's propped at. Orientation checks (see sensors.ts's flatness
 // check) only catch specific angles; this catches any prop, at any angle,
 // by looking for movement suspiciously below what a real hold can achieve.
-// Calibrated against two genuine held runs that scored 93.80 and 94.76
-// (movementScore ~1.13 and ~0.95), so this floor sits well below real
-// performance but well above what an inert object should read. Still a
-// placeholder pending more real-device data, especially from propped runs.
-export const MIN_LIVENESS_MOVEMENT = 0.4;
+// The original 0.4 floor was calibrated against just two genuine held runs
+// (movementScore ~1.13 and ~0.95) and turned out to sit too close to real
+// elite play: production data later showed genuine, repeated, real-device
+// runs clustering right against that wall (0.40-0.56 across every top-20
+// run), meaning it was clipping legitimate exceptional stillness rather
+// than catching props. Lowered to give real headroom below the original
+// calibration samples while still sitting well above what an inert prop
+// should read (near the sensor noise floor, close to 0). Still a
+// placeholder pending more data - see logTooStillRejection in storage.ts,
+// added alongside this change specifically to capture that data going
+// forward instead of discarding rejected runs with no record.
+export const MIN_LIVENESS_MOVEMENT = 0.2;
 
 export function isTooStillToBeHandheld(movementScore: number): boolean {
   return movementScore < MIN_LIVENESS_MOVEMENT;
