@@ -13,7 +13,7 @@ export function DevBadge({ size = 16 }: DevBadgeProps) {
       style={[styles.badge, { width: size * 1.6, height: size * 1.6, borderRadius: radius.sm }]}
       accessibilityLabel="Developer"
     >
-      <Ionicons name="code-slash" size={size} color={colors.background} />
+      <Ionicons name="hardware-chip" size={size} color={colors.background} />
     </View>
   );
 }
